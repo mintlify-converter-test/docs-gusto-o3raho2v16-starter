@@ -1,0 +1,13 @@
+---
+title: "Payroll Statuses"
+description: "Default, submitted, pending, and paid payroll states"
+---
+| Status: | Unprocessed | Submitted | Pending | Paid |
+| --- | --- | --- | --- | --- |
+| **Description** | A payroll's default state when it is first created. | Payroll has been submitted to Gusto for processing but bank debits have not been initiated yet. | Payroll has been submitted to Gusto and company bank debits have been initiated. | A payroll was submitted, processed, and employee direct deposit payments have been initiated (employees paid / payroll complete). |
+| **Business Logic** | `"processed": false` | `"processed": true`    Current time is `<` 4:00pm PT on the `payroll_deadline` | `"processed": true`    Current time is `>=` 4:00pm on the `payroll_deadline` | `"processed": true`    Current time is `>=` **`check_date`** |
+| **Transitions** | An **unprocessed** payroll transitions to the next status - \*\*submitted - when payroll is [submitted](/embedded-payroll/reference/put-v1-companies-company_id-payrolls-payroll_id-submit). | A **submitted payroll** transitions to **pending** at 4:00pm PT on the `payroll_deadline`.    When a **submitted** payroll is [canceled](/embedded-payroll/reference/put-api-v1-companies-company_id-payrolls-payroll_id-cancel), a payroll transitions back to `"processed": false` (unprocessed). | A **pending** payroll transitions to **paid** on the `check_date`.    If Gusto is unable to debit the company bank account (i.e lack of funds), the payroll will transition back to **unprocessed**. | This is the final state of a payroll and it does not transition to another status from here. |
+| **Can Update?**  (includes skip) | Yes | No  | No  | No  |
+| **Can Cancel?** | No  | Yes | No  | No  |
+| _Additional Details_ |     | \_Bank debits will initiate a little after 4:00pm PT on the `payroll_deadline`.    If payroll is submitted after 4:00pm PT on the `payroll_deadline`, the payroll will be delayed by 1 business day and the `payroll_deadline` will update accordingly.\_ |     | _Direct deposits are typically paid early on the morning of the `check_date` but sometimes it takes a little longer for banks to update. Please up to 24 hrs for the deposits to be reflected on employee bank statements._ |
+
