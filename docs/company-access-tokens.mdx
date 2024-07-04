@@ -1,0 +1,102 @@
+---
+title: "Acquiring an Access Token"
+description: "Steps to obtain a company level access token"
+---
+## Acquiring an Access Token
+
+A company level token can be obtained by creating a partner managed company or going through the in app authorization code flow if the company is migrating to embedded payroll.
+
+After creation of a partner managed company, you will receive an `access_token`, `refresh_token`, `expires_in`, and the `uuid` of the created company to make subsequent API calls on behalf of the company. `expires_in` is the number of seconds in which the `access_token` will expire.
+
+```json
+{
+  "access_token": "JKrGqRyrYfY1PB0YhsuRkbrrWBJ5iSUODDNA28D3yMc",
+  "refresh_token": "T0jHy4Oc3FWi7hDPEMPdpbGiLpB0rWeb1ZJOJVB36oU",
+  "company_uuid": "d525dd21-ba6e-482c-be15-c2c7237f1364",
+  "expires_in": 7200
+}
+```
+
+## Refreshing Access Tokens
+
+This access token expires 2 hours after they are issued. If an access token is expired you will receive `401 Unauthorized` errors. To refresh the access token, you will need the `client_id`, `client_secret`, and `redirect_uri` from the [application](https://dev.gusto.com/applications)
+ you created in the developer portal as well as your `refresh_token`. A `refresh_token` can be exchanged to get a new `access_token` and `refresh_token`.
+
+To refresh your `access_token` use the `POST oauth/token` endpoint and include the `refresh_token` and `"grant_type" : “refresh_token”` in the request body.
+
+The `client_secret` cannot be passed via API request URLs. Attempting to include the `client_secret` in the request URL will result in a `400 Bad Request` error.
+
+```curl
+curl --location --request POST 'https://api.gusto-demo.com/oauth/token' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+  "client_id": "{{client_id}}",
+  "client_secret": "{{client_secret}}",
+  "redirect_uri": "https://localhost:3000",
+  "refresh_token": "T0jHy4Oc3FWi7hDPEMPdpbGiLpB0rWeb1ZJOJVB36oU",
+  "grant_type": "refresh_token"
+}'
+
+``````curl
+import fetch from 'node-fetch';
+
+const url = 'https://api.gusto-demo.com/oauth/token`;
+const options = {
+  method: 'POST',
+  headers: {
+    accept:'application/json', 
+    'content-type': 'application/json',
+    'Authorization': 'Token {{API_TOKEN}}'},
+  body: JSON.stringify({
+    'client_id': '{{client_id}}',
+    'client_secret': '{{client_secret}}',
+    'redirect_uri': 'https://localhost:3000',
+    'refresh_token': 'T0jHy4Oc3FWi7hDPEMPdpbGiLpB0rWeb1ZJOJVB36oU',
+    'grant_type': 'refresh_token'
+    })
+};
+
+fetch(url, options)
+  .then(res => res.json())
+  .then(json => console.log(json))
+  .catch(err => console.error('error:' + err));
+
+
+
+```
+
+The corresponding response will include a new `access_token` and `refresh_token`.
+
+```json
+{
+  "access_token": "737HdeXfIqgx-NfaUFRuhV7JDe6ns6ptanJSMuQzjlc",
+  "token_type": "bearer",
+  "expires_in": 7200,
+  "refresh_token": "iEjL96L9Pndwmi-xVX3Q-xbrvvhnjHYGX87sopgGJ8E"
+}
+```
+
+The previous `refresh_token` will be revoked on the first usage of the new `access_token`. In our example, the previous refresh\_token `T0jHy4Oc3FWi7hDPEMPdpbGiLpB0rWeb1ZJOJVB36oU` is only revoked when the new access\_token `737HdeXfIqgx-NfaUFRuhV7JDe6ns6ptanJSMuQzjlc` is used in the Authorization header of a Gusto API call. The `expires_in` value is provided in seconds from when the access\_token was generated.
+
+## Token Management Recommendations
+
+Access/refresh token pairs are specific to a resource, typically a company. The following `gusto_auth_tokens` table definition is an **example** of how Gusto tokens can be stored.
+
+<img className="block" src="https://lucid.app/publicSegments/view/0b198659-cf46-48f9-ae4a-a4f3f773dba5/image.png "Example"" alt="ER" />
+
+*   `company_uuid` is the Gusto company UUID. This column could also be a foreign key to your own `companies` table which also contains a `gusto_company_uuid` column.
+*   `access_token_expiration` the `expires_in`response field is the expiration time in seconds of the newly generated `access_token` whether by [Create a partner managed company](/embedded-payroll/reference/post-v1-partner-managed-companies)
+     or **Refresh Access Token** . The expiration time is **7200** seconds or 2 hours. To be safe, the `access_token_expiration` can be set to (`expires_in`\- 60) from when the response is received. This field can be used to proactively refresh tokens instead of always waiting for a 401 response to trigger a refresh.
+
+Care should be taken to avoid token refresh race conditions. It is recommended to have unique constraints and when refreshing tokens, lock the associated row.
+
+#### Example refresh steps:
+
+1.  An access token needs to be refreshed. We know this because the `access_token_expiration`is less than current time or an HTTP status of 401 is received from a Gust API request.
+2.  Lock the `gusto_auth_tokens`row for the associated `company_uuid`.
+3.  Refresh the access token as instructed above.
+4.  Update the `gusto_auth_tokens`row with the new access and refresh tokens. The `access_token_expiration`should also be updated to (`expires_in`\- 60) seconds from the current time.
+5.  Unlock the row.
+6.  Use the new access\_token for Gusto API requests.
+7.  All concurrent processes should use the latest `access_token`.
+
