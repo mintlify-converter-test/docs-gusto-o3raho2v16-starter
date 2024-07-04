@@ -1,0 +1,18 @@
+---
+title: "API Scopes"
+description: "Control access to API endpoints with specific scopes for read and write actions."
+---
+API Scopes control access to various API endpoints for your app. Gusto uses scopes that refer to the resource they grant access to, followed by the action on that resource they allow (e.g. `employees:read`).
+
+We currently support two classes of action:
+
+*   read: Reading the information about a resource.
+*   write: Modifying the resource in any way e.g. creating, editing, or deleting.
+
+All applications will be assigned API scopes based on your embedded payroll use-case before production tokens are activated. Any API call made outside of your assigned scope in production will be rejected and you will receive a `403 Forbidden` error. To request additional scopes or change scopes after releasing to production, reach out to your Technical Solutions representative.
+
+You can check your application’s granted API scopes via your [Developer Portal account](https://dev.gusto.com/accounts/sign_in)
+.
+
+We recommend limiting your scopes to the bare minimum so that users can feel confident with your application and the amount of data it can access.
+
