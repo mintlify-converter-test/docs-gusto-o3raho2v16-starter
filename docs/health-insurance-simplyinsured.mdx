@@ -1,0 +1,68 @@
+---
+title: "Health Insurance through SimplyInsured"
+description: "Gusto Embedded and SimplyInsured provide a fully online health insurance platform for partners and their customers"
+---
+## What is Health Insurance through SimplyInsured?
+
+Gusto Embedded has partnered with SimplyInsured to provide a seamless and convenient, fully online and self-serve health insurance platform for partners so their end customers can seamlessly and quickly get health insurance quotes.
+
+SimplyInsured offers thousands of health insurance plans across the country from all major carriers.
+
+## SimplyInsured Flow Experience
+
+### 1\. Launch a SimplyInsured Flow
+
+Partners can generate a link for employer payroll admins to access SimplyInsured by using [Gusto Embedded’s pre-built flows](https://docs.gusto.com/embedded-payroll/reference/post-v1-company-flows)
+. Partners should use the `company_health_insurance` value within the `flow_type` body parameter contained in the `POST companies/{company_uuid}/flows` [endpoint](https://docs.gusto.com/embedded-payroll/reference/post-v1-company-flows)
+.
+
+```javascript
+curl --request POST \
+     --url https://api.gusto-demo.com/v1/companies/company_uuid/flows \
+     --header 'accept: application/json' \
+     --header 'content-type: application/json'
+     --data '
+{
+  "flow_type": "company_health_insurance"
+}
+
+```
+
+> ## 📘No API Support (Flow Only)
+> 
+> There currently is no API support for SimplyInsured and it is available only through the prebuilt UI Flow.
+
+### 2\. Granting Access
+
+After the flow has launched, the Payroll Admin can apply for a new group health insurance policy or connect their existing health insurance plan to SimplyInsured.
+
+<img className="block" src="images/files_readme_io/_9f699ec_unnamed.png" alt="" />
+
+**Note:** The payroll admin can finish their quote at a later time by using the same generated web flow URL. The payroll admin will click “Continue to SimplyInsured” to resume.
+
+<img className="block" src="images/files_readme_io/_761453a_unnamed1.png" alt="" />
+
+## SimplyInsured Benefit Creation
+
+SimplyInsured will create new benefits in Gusto Embedded. No manual creation is necessary by the payroll admin.
+
+For new customers, the company benefits will automatically be created in Gusto Embedded on the first day of enrollment and employee benefits would get created on the first day benefits are available.
+
+For example: A company is approved for 12/1/2023 benefits on 11/25/2023, the company benefits will get created on 11/25/2023 in Gusto Embedded. The employee Benefits would get created 12/1/2023 in Gusto.
+
+For transfers, both company and employee get created in Gusto on the day the transfer is approved and the company is marked as enrolled by SimplyInsured.
+
+## Employee Onboarding
+
+Once an employee is onboarded through the existing Gusto Embedded integration process, the SimplyInsured onboarding will automatically kick off the process to add the employee to group health insurance coverage.
+
+As soon as SimplyInsured receives a notification from Gusto that an employee has been added, SimplyInsured will send an email to the admin, giving them the option to offer or not to offer benefits to the newly added employee. If the admin elects benefits for that employee via the email or there is no response three days after the email is sent, the employee will be offered health benefits.
+
+No additional manual intervention is required by the payroll admin.
+
+## Employee Termination
+
+Once an employee is terminated through the existing Gusto Embedded integration process, the SimplyInsured termination will automatically kick off the process to remove the employee from group coverage. Within an hour of termination, an employee will receive an email with details on when their coverage ends and additional continuation coverage info, if applicable.
+
+No additional manual intervention is required by the payroll admin.
+
