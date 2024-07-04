@@ -1,0 +1,762 @@
+---
+title: "Create a Partner Managed Company"
+description: "Steps to create a company using the POST partner_managed_companies endpoint"
+---
+Before using this guide you must have a [developer account](https://dev.gusto.com/organizations)
+ and created an [application](https://dev.gusto.com/applications)
+. To learn more about these steps, review the [Getting Started](/embedded-payroll/docs/getting-started)
+ guide.
+
+## 1\. Create a Partner Managed Company
+
+You can create a company using the `POST partner_managed_companies` [endpoint](/embedded-payroll/reference/post-v1-partner-managed-companies)
+.
+
+```curl
+curl --request POST \
+     --url https://api.gusto-demo.com/v1/partner_managed_companies \
+     --header 'accept: application/json' \
+     --header 'content-type: application/json'\
+     --header 'Authorization: Bearer {{system_access_token}}'\
+      --data '{
+       "user": {
+            "last_name": "Mushnik",
+            "first_name": "Mister",
+            "email": "mushnikflowers@testemail.com"
+       },
+       "company": {
+            "name": "Mushnik`s Flower Shop"
+            "ein": 910532465
+       }
+			}'
+
+``````curl
+const fetch = require('node-fetch');
+
+const url = 'https://api.gusto-demo.com/v1/partner_managed_companies';
+const options = {
+  method: 'POST',
+  headers: {
+    accept: 'application/json', 
+    'content-type': 'application/json',
+    authorization: 'Bearer API_TOKEN'
+  }
+  },
+  body: JSON.stringify({
+    user: {
+      first_name: 'Mister',
+      last_name: 'Mushnik',
+      email: 'mushnikflowers@testemail.com'
+    },
+    company: {
+      name: "Mushnik\'s Flower Shop",
+      ein: "910532465"
+  }
+                       
+  })
+};
+
+fetch(url, options)
+  .then(res => res.json())
+  .then(json => console.log(json))
+  .catch(err => console.error('error:' + err));
+
+```
+
+> ## 📘Payroll Administrators
+> 
+> The user created in this step is the primary payroll administrator of the new company. If you want to add more administrators you can use the `POST companies/{company_id}/admins` [endpoint](/embedded-payroll/reference/post-v1-companies-company_id-admins)
+> .
+
+## 2\. View and Accept Terms of Service
+
+Each user must accept the Gusto Embedded [Terms of Service](https://flows.gusto.com/terms)
+. The user must exist in Gusto before you can [retrieve](/embedded-payroll/reference/post-partner-managed-companies-company_uuid-retrieve_terms_of_service)
+ and [accept](/embedded-payroll/reference/post-partner-managed-companies-company_uuid-accept_terms_of_service)
+ the Terms of Service for the user. If the user does not yet exist in Gusto, you should create the [admin](/embedded-payroll/reference/post-v1-companies-company_id-admins)
+, [signatory](/embedded-payroll/reference/post-v1-company-signatories)
+, [employee](/embedded-payroll/reference/post-v1-employees)
+, or [contractor](/embedded-payroll/reference/post-v1-companies-company_id-contractors)
+ record before surfacing the Terms of Service step in your application.
+
+Partners may either embed a link to the terms of service in a short disclaimer such as "By continuing to the next step, I agree to the Embedded Payroll Terms of Service" or they can include the terms in an iframe for a user to scroll through. In both cases, the user has to explicitly accept the TOS via a checkbox or other method.
+
+```curl
+curl --request POST \
+     --url https://api.gusto-demo.com/v1/partner_managed_companies/{company_uuid}/accept_terms_of_service \
+     --header 'accept: application/json' \
+     --header 'authorization: Bearer {{company_access_token}}' \
+     --header 'content-type: application/json' \
+     --data '
+{
+     "email": "mushnikflowers@testemail.com",
+     "external_user_id": "2005648946132",
+     "ip_address": "192.168.1.2"
+}
+'
+
+``````curl
+const fetch = require('node-fetch');
+
+const url = 'https://api.gusto-demo.com/v1/partner_managed_companies/{company_uuid}/accept_terms_of_service';
+const options = {
+  method: 'POST',
+  headers: {
+    accept: 'application/json',
+    'content-type': 'application/json',
+    authorization: 'Bearer API_TOKEN'
+  },
+  body: JSON.stringify({
+    email: 'mushnikflowers@testemail.com',
+    external_user_id: '2005648946132',
+    ip_address: '192.168.1.2'
+  })
+};
+
+fetch(url, options)
+  .then(res => res.json())
+  .then(json => console.log(json))
+  .catch(err => console.error('error:' + err));
+
+```
+
+## 3\. Create a Company Location
+
+Gusto requires the company’s mailing and filing address and all addresses where the company has employees physically working in the United States. This includes remote employees and employees who work from home. Set these addresses using the `POST company/{company_uuid}/locations` [endpoint](/embedded-payroll/reference/post-v1-companies-company_id-locations)
+.
+
+```curl
+curl --request POST \
+     --url https://api.gusto-demo.com/v1/companies/{company_uuid}/locations \
+     --header 'accept: application/json' \
+     --header 'authorization: Bearer {{company_access_token}}' \
+     --header 'content-type: application/json' \
+     --data '
+{
+     "phone_number": "8009360383",
+     "street_1": "425 2nd Street",
+     "street_2": "Suite 602",
+     "city": "San Francisco",
+     "state": "CA",
+     "zip": "94107",
+     "country": "USA",
+     "filing_address": true,
+     "mailing_address": true
+}
+'
+
+``````curl
+const fetch = require('node-fetch');
+
+const url = 'https://api.gusto-demo.com/v1/companies/{company_uuid}/locations';
+const options = {
+  method: 'POST',
+  headers: {
+    accept: 'application/json',
+    'content-type': 'application/json',
+    authorization: 'Bearer COMPANY_API_TOKEN'
+  },
+  body: JSON.stringify({
+    phone_number: '8009360383',
+    street_1: '425 2nd Street',
+    street_2: 'Suite 602',
+    city: 'San Francisco',
+    state: 'CA',
+    zip: '94107',
+    country: 'USA'
+  })
+};
+
+fetch(url, options)
+  .then(res => res.json())
+  .then(json => console.log(json))
+  .catch(err => console.error('error:' + err));
+
+```
+
+> ## 🛑Company Location Requirement
+> 
+> The company must a specify a `filing_address` and `mailing_address` in order to fulfill this onboarding requirement. This can be the same address or a different address.
+
+## 4\. Update Federal Tax Details
+
+In order to file and pay taxes correctly, a company needs to provide federal tax information. You can find this info on the company's [IRS Form CP-575](https://gusto.com/blog/taxes/form-cp-575)
+. To update the Federal Tax Details, you will first need to get the `version` of the tax details using the `GET companies/{company_uuid}/federal_tax_details` [endpoint](/embedded-payroll/reference/get-v1-companies-company_id-federal_tax_details)
+. Once you have the `version` you can update the federal tax details using the `PUT companies/{company_uuid}/federal_tax_details` [endpoint](/embedded-payroll/reference/put-v1-companies-company_id-federal_tax_details)
+.
+
+```curl
+curl --request PUT \
+     --url https://api.gusto-demo.com/v1/companies/{company_uuid}/federal_tax_details \
+     --header 'accept: application/json' \
+     --header 'authorization: Bearer {{company_access_token}}' \
+     --header 'content-type: application/json' \
+     --data '
+{
+     "version": "6cb95e00540706ca48d4577b3c839fbe",
+     "tax_payer_type": "LLP",
+     "taxable_as_scorp": false,
+     "filing_form": "944",
+     "has_ein": true,
+     "ein_verified": false,
+     "legal_name": "Mushnik\'s Flower Shop Inc"
+}'
+
+``````curl
+const fetch = require('node-fetch');
+
+const url = 'https://api.gusto-demo.com/v1/companies/{company_uuid}/federal_tax_details';
+const options = {
+  method: 'PUT',
+  headers: {
+    accept: 'application/json',
+    'content-type': 'application/json',
+    authorization: 'Bearer COMPANY_API_TOKEN'
+  },
+  body: JSON.stringify({
+    version: '6cb95e00540706ca48d4577b3c839fbe',
+    tax_payer_type: 'LLP',
+    taxable_as_scorp: false,
+    filing_form: '944',
+    has_ein: true,
+    ein_verified: false,
+    legal_name: 'Mushnik\'s Flower Shop Inc'
+  })
+};
+
+fetch(url, options)
+  .then(res => res.json())
+  .then(json => console.log(json))
+  .catch(err => console.error('error:' + err));
+
+```
+
+## 5\. Update Company Industry
+
+Update the company's industry selection using `naics_code`and`sic_codes` with the `PUT companies/{company_uuid}/industry_selection` [endpoint](/embedded-payroll/reference/put-v1-company-industry)
+ .
+
+> ## 📘NAICS and SIC Codes
+> 
+> Gusto requires this information to stay in compliance with finance regulations. [North American Industry Classification System](https://www.naics.com/)
+>  (NAICS) is used to classify businesses with a six digit number based on the primary type of work the business performs. SIC codes are the list of [Standard Industrial Classification](https://siccode.com/)
+> , which are four digit numbers that categorize the industries that companies belong to based on their business activities. You can look up a company’s NAICS and SIC codes [here](https://www.naics.com/naics-code-description/)
+> .
+
+```curl
+curl --request PUT \
+     --url https://api.gusto-demo.com/v1/companies/{company_uuid}/industry_selection \
+     --header 'accept: application/json' \
+     --header 'authorization: Bearer {{company_access_token}}' \
+     --header 'content-type: application/json' \
+     --data '
+{
+     "title": "Computer Training",
+     "naics_code": "611420",
+     "sic_codes": [\
+          "8243"\
+     ]
+}
+'
+
+``````curl
+const fetch = require('node-fetch');
+
+const url = 'https://api.gusto-demo.com/v1/companies/{company_uuid}/industry_selection';
+const options = {
+  method: 'PUT',
+  headers: {
+    accept: 'application/json',
+    'content-type': 'application/json',
+    authorization: 'Bearer COMPANY_API_TOKEN'
+  },
+  body: JSON.stringify({title: 'Computer Training', naics_code: '611420', sic_codes: ['8243']})
+};
+
+fetch(url, options)
+  .then(res => res.json())
+  .then(json => console.log(json))
+  .catch(err => console.error('error:' + err));
+
+```
+
+## 6\. Add Company Bank Account and Verify Account
+
+You can create and connect a new bank account for a company using the `POST companies/{company_id}/bank_accounts` [endpoint](/embedded-payroll/reference/post-v1-companies-company_id-bank-accounts)
+. If a default bank account exists, the new bank account will replace it as the company's default funding method.
+
+You can also connect a bank account from [Plaid](https://plaid.com/docs/api/processors/#processortokencreate)
+ using the `POST plaid/processor_token` [endpoint](/embedded-payroll/reference/post-v1-plaid-processor_token)
+.
+
+```curl
+curl --request POST \
+     --url https://api.gusto-demo.com/v1/companies/{company_uuid}/bank_accounts \
+     --header 'accept: application/json' \
+     --header 'authorization: Bearer {{company_access_token}}' \
+     --header 'content-type: application/json' \
+     --data '
+{
+     "routing_number": "115092013",
+     "account_type": "Checking",
+     "account_number": "9775014007"
+}
+'
+
+``````curl
+const fetch = require('node-fetch');
+
+const url = 'https://api.gusto-demo.com/v1/companies/{company_uuid}/bank_accounts';
+const options = {
+  method: 'POST',
+  headers: {
+    accept: 'application/json',
+    'content-type': 'application/json',
+    authorization: 'Bearer COMPANY_API_TOKEN'
+  },
+  body: JSON.stringify({
+    routing_number: '115092013',
+    account_type: 'Checking',
+    account_number: '9775014007'
+  })
+};
+
+fetch(url, options)
+  .then(res => res.json())
+  .then(json => console.log(json))
+  .catch(err => console.error('error:' + err));
+
+```
+
+> ## 📘Routing Numbers in Demo Environment
+> 
+> Our API validates the routing number to ensure it's a valid US routing number and will reject false inputs. When testing in Gusto's demo environment, you can use this sample routing number: `102001017`.
+
+Upon being created, two verification deposits are automatically sent to the bank account in **1-2 business days**, and the bank account's `verification_status` is `awaiting_deposits`.
+
+When the deposits are successfully transferred, the `verification_status` changes to `ready_for_verification`, at which point the `PUT companies/{company_id}/bank_accounts/{bank_account_uuid}/verify` [endpoint](/embedded-payroll/reference/put-v1-companies-company_id-bank-accounts-verify)
+ can be used to verify the bank account. After successful verification, the bank account's `verification_status` is `verified`.
+
+```curl
+curl --request PUT \
+     --url https://api.gusto-demo.com/v1/companies/{company_uuid}/bank_accounts/{bank_account_uuid}/verify \
+     --header 'accept: application/json' \
+     --header 'authorization: Bearer {{company_access_token}}' \
+     --header 'content-type: application/json' \
+     --data '
+{
+     "deposit_1": 0.02,
+     "deposit_2": 0.42
+}
+'
+
+``````curl
+const fetch = require('node-fetch');
+
+const url = 'https://api.gusto-demo.com/v1/companies/{company_uuid}/bank_accounts/{bank_account_uuid}/verify';
+const options = {
+  method: 'PUT',
+  headers: {
+    accept: 'application/json',
+    'content-type': 'application/json',
+    authorization: 'Bearer COMPANY_API_TOKEN'
+  },
+  body: JSON.stringify({deposit_1: 0.02, deposit_2: 0.42})
+};
+
+fetch(url, options)
+  .then(res => res.json())
+  .then(json => console.log(json))
+  .catch(err => console.error('error:' + err));
+
+```
+
+> ## 📘Validation in Demo Environment
+> 
+> We provide the `POST companies/{company_id_or_uuid}/bank_accounts/{bank_account_uuid}/send_test_deposits` [endpoint](/embedded-payroll/reference/put-v1-companies-company_id-bank-accounts-verify)
+>  to facilitate bank account verification in the demo environment. This endpoint simulates the micro-deposits transfer and returns them in the response. You can call this endpoint as many times as you wish to retrieve the values of the two micro deposits
+
+## 7\. Create an Employee
+
+Employees are a critical part of payroll. Companies themselves are, naturally, a collection of one to hundreds of employees that must be paid on a regular cadence for work done. There are two different ways to create and onboard an employee: By Employer or By Employees ("self-onboarding").
+
+For a more comprehensive Employee Onboarding, you can read the [Onboard a W2 Employee](/embedded-payroll/docs/onboard-a-w2-employee)
+ guide.
+
+You can create an employee using the `POST companies/{company_id}/employees` [endpoint](/embedded-payroll/reference/post-v1-employees)
+.
+
+The example below shows an employee "self-onboarding".
+
+```curl
+curl --request POST \
+     --url https://api.gusto-demo.com/v1/companies/{company_uuid}/employees \
+     --header 'accept: application/json' \
+     --header 'authorization: Bearer {{company_access_token}}' \
+     --header 'content-type: application/json' \
+     --data '
+{
+     "first_name": "Alexander",
+     "middle_initial": "A",
+     "last_name": "Hamilton",
+     "date_of_birth": "1979-06-01",
+     "email": "sonofanorphan@example.com",
+     "ssn": "123451776",
+     "self_onboarding": true
+}
+'
+
+``````curl
+const fetch = require('node-fetch');
+
+const url = 'https://api.gusto-demo.com/v1/companies/{company_uuid}/employees';
+const options = {
+  method: 'POST',
+  headers: {
+    accept: 'application/json',
+    'content-type': 'application/json',
+    authorization: 'Bearer COMPANY_API_TOKEN'
+  },
+  body: JSON.stringify({
+    first_name: 'Alexander',
+    middle_initial: 'A',
+    last_name: 'Hamilton',
+    date_of_birth: '1979-06-01',
+    email: 'sonofanorphan@example.com',
+    ssn: '123451776',
+    self_onboarding: true
+  })
+};
+
+fetch(url, options)
+  .then(res => res.json())
+  .then(json => console.log(json))
+  .catch(err => console.error('error:' + err));
+
+```
+
+> ## 📘Adding Employees
+> 
+> If `"self_onboarding": true`, the employee is expected to self-onboard. If `false`, the payroll admin is required to enter all of the employee's onboarding information.
+
+## 8\. Create a Pay Schedule
+
+To create a pay schedule for a company use the `POST companies/{company_id}/pay_schedules` [endpoint](/embedded-payroll/reference/post-v1-companies-company_id-pay_schedules)
+. This creates a new pay schedule for the company. To learn more about Pay Schedules review the [Create a Pay Schedule](/embedded-payroll/docs/create-a-pay-schedule)
+ guide.
+
+> ## 📘Anchor Pay Date
+> 
+> 1.  Payroll of any kind (regular, off-cycle, etc.) cannot be run in a quarter prior to the quarter that the anchor pay date falls in.
+> 2.  If payroll (regular or off-cycle) is not run by the set anchor pay date, the field will be invalidated and the pay schedule will need to be set again.
+> 3.  If the anchor pay date is changed prior to running the first payroll, form 8655 will need to be resigned by the company signatory.
+>     1.  Context: the anchor pay date is reported on the Federal 8655 form (authorization for Gusto to pay & file taxes on behalf of the company). Because of this, our authorization starts in the month associated with the anchor pay date. If any information pertaining to this date changes, that form will be regenerated and need signature again.
+
+## 9\. Update Company State Tax Details
+
+> ## 🛑Company State Tax Pre-Requisite
+> 
+> A company must [create a company location](/embedded-payroll/reference/post-v1-companies-company_id-locations)
+>  and [create an employee work address](/embedded-payroll/reference/post-v1-employees-employee_id-work_addresses)
+>  before this step can be completed.
+> 
+> Context: Gusto determines the company's state tax requirements from the employee work address(es) since this is where the company is liable for state taxes.
+
+Although APIs exist for the majority of Company and Employee Onboarding steps, **We recommend using the flow to handle the 2400+ different state tax account numbers**
+
+To learn more about this flow read the [Flows (Pre-built UI)](/embedded-payroll/docs/flows-intro)
+ guide.
+
+## 10\. Add Previous Payrolls (Optional)
+
+Historical payrolls are used for companies who transfer from one payroll provider to your payroll product after the start of a year. It's important to capture their previous payrolls during Company Onboarding to ensure year to date filings are accurate.
+
+Employees are expecting a single W-2 with all their tax information at the end of the calendar year even if their Employer has switched to a different payroll provider at any time during that year.
+
+You can use our [Create a Historical Payroll](/embedded-payroll/docs/create-a-historical-payroll)
+ Guide to add previous payroll.
+
+## 11\. Add a Signatory
+
+The signatory should be an officer, owner, general partner or LLC member manager, plan administrator, fiduciary, or an authorized representative who is designated to sign agreements on the company's behalf. An officer is the president, vice president, treasurer, chief accounting officer, etc.
+
+**There can only be a single primary signatory in a company** so you must [delete a signatory](/embedded-payroll/reference/delete-v1-companies-company_uuid-signatories-signatory_uuid)
+ before creating a new one. You can retrieve the current primary signatory from `GET companies/{company_uuid}/signatories` endpoint.
+
+You can either [create a new signatory](/embedded-payroll/reference/post-v1-company-signatories)
+ or [invite a signatory](/embedded-payroll/reference/post-v1-companies-company_uuid-signatories-invite)
+ to create a signatory with minimal information and subsequently populate the remaining information using the [update a signatory endpoint](/embedded-payroll/reference/put-v1-companies-company_uuid-signatories-signatory_uuid)
+. The example below will show creating a new signatory using `POST companies/{company_uuid}/signatories`.
+
+```curl
+curl --request POST \
+     --url https://api.gusto-demo.com/v1/companies/{company_uuid}/signatories \
+     --header 'accept: application/json' \
+     --header 'authorization: Bearer {{company_access_token}}' \
+     --header 'content-type: application/json' \
+     --data '
+{
+     "home_address": {
+          "street_1": "35 Fantine Street",
+          "street_2": "Suite 17",
+          "city": "Paris",
+          "state": "TX",
+          "zip": "75460"
+     },
+     "ssn": "254324601",
+     "first_name": "Jean",
+     "last_name": "Valjean",
+     "email": "stringthemiserable@example.com\"",
+     "title": "Business Man",
+     "phone": "8002331000",
+     "birthday": "1983-12-01"
+}
+'
+
+``````curl
+const fetch = require('node-fetch');
+
+const url = 'https://api.gusto-demo.com/v1/companies/{company_uuid}/signatories';
+const options = {
+  method: 'POST',
+  headers: {
+    accept: 'application/json',
+    'content-type': 'application/json',
+    authorization: 'Bearer COMPANY_API_TOKEN'
+  },
+  body: JSON.stringify({
+    home_address: {
+      street_1: '35 Fantine Street',
+      street_2: 'Suite 17',
+      city: 'Paris',
+      state: 'TX',
+      zip: '75460'
+    },
+    ssn: '254324601',
+    first_name: 'Jean',
+    last_name: 'Valjean',
+    email: 'stringthemiserable@example.com"',
+    title: 'Business Man',
+    phone: '8002331000',
+    birthday: '1983-12-01'
+  })
+};
+
+fetch(url, options)
+  .then(res => res.json())
+  .then(json => console.log(json))
+  .catch(err => console.error('error:' + err));
+
+```
+
+## 12\. Sign Documents
+
+> ## 🛑Sign Documents Pre-Requisite
+> 
+> You will not be able to sign onboarding documents until all of the above required steps have been completed
+
+To see what forms need to be signed, you can use the `GET companies/{company_id}/forms` [endpoint](/embedded-payroll/reference/get-v1-company-forms)
+.
+
+This will return an array of objects with documents:
+
+```json
+[
+  {
+    "uuid": "48cdd5ec-a4dd-4840-a424-ad79f38d8408",
+    "name": "company_direct_deposit",
+    "title": "Direct Deposit Authorization",
+    "description": "We need you to sign paperwork to authorize us to debit and credit your bank account and file and pay your taxes.",
+    "requires_signing": true
+  }
+]
+```
+
+To preview the PDF of each document you can use the `GET forms/{form_uuid}/pdf` [endpoint](/embedded-payroll/reference/get-v1-company-form-pdf)
+.
+
+After identifying which forms require signing (`"requires_signing": true`) you can use the `uuid` of the form and make a subsequent request to sign a company form using the `PUT /forms/{form_id}/sign` [endpoint](/embedded-payroll/reference/put-v1-company-form-sign)
+.
+
+```curl
+curl --request PUT \
+     --url https://api.gusto-demo.com/v1/forms/48cdd5ec-a4dd-4840-a424-ad79f38d8408/sign \
+     --header 'accept: application/json' \
+     --header 'authorization: Bearer {{company_access_token}}' \
+     --header 'content-type: application/json' \
+     --data '
+{
+     "signature_text": "Jean Valjean",
+     "agree": true,
+     "signed_by_ip_address": "192.168.0.1"
+}
+'
+
+``````curl
+const fetch = require('node-fetch');
+
+const url = 'https://api.gusto-demo.com/v1/forms/48cdd5ec-a4dd-4840-a424-ad79f38d8408/sign';
+const options = {
+  method: 'PUT',
+  headers: {
+    accept: 'application/json',
+    'content-type': 'application/json',
+    authorization: 'Bearer COMPANY_API_TOKEN'
+  },
+  body: JSON.stringify({
+    signature_text: 'Jean Valjean',
+    agree: true,
+    signed_by_ip_address: '192.168.0.1'
+  })
+};
+
+fetch(url, options)
+  .then(res => res.json())
+  .then(json => console.log(json))
+  .catch(err => console.error('error:' + err));
+
+```
+
+> ## 📘Form 8655 regenerates in these scenarios and will require re-signature:
+> 
+> *   The 8655 form has already been signed, and the signatory data has changed
+> *   The pay schedule’s new pay date’s month is earlier than the old pay date’s month (ex: if the previous pay date is in March and the new pay date is in February
+> *   Company data change occurs for any of the following: Company EIN, Company filing address, Company name
+
+If a form requires action you can subscribe to [webhooks](/embedded-payroll/docs/webhooks)
+ and listen for `form.updated`. Check the value of `form.signed_at` - if going from present to blank/nil, then the form has gone from signed → unsigned.
+
+## 13\. Confirm all steps are complete and submit
+
+To confirm all steps have been completed, you can check the company’s onboarding status using the `GET companies/{company_uuid}/onboarding_status` [endpoint](/embedded-payroll/reference/get-v1-company-onboarding-status)
+. In the example below, `payroll_schedule`,`sign_all_forms`,and `verify_bank_info` have not been completed as shown by `"completed": false`.
+
+```json
+{
+  "uuid": "94a4d25c-c3a6-4bea-92a8-356ac915c8aa",
+  "onboarding_completed": false,
+  "onboarding_steps": [
+    {
+      "title": "Add Your Company’s Addresses",
+      "id": "add_addresses",
+      "required": true,
+      "completed": true,
+      "requirements": []
+    },
+    {
+      "title": "Enter Your Federal Tax Information",
+      "id": "federal_tax_setup",
+      "required": true,
+      "completed": true,
+      "requirements": []
+    },
+    {
+      "title": "Select Industry",
+      "id": "select_industry",
+      "required": true,
+      "completed": true,
+      "requirements": []
+    },
+    {
+      "title": "Add Your Bank Account",
+      "id": "add_bank_info",
+      "required": true,
+      "completed": true,
+      "requirements": []
+    },
+    {
+      "title": "Add Your Employees",
+      "id": "add_employees",
+      "required": true,
+      "completed": true,
+      "requirements": [
+        "add_addresses"
+      ]
+    },
+    {
+      "title": "Enter Your State Tax Information",
+      "id": "state_setup",
+      "required": true,
+      "completed": true,
+      "requirements": [
+        "add_addresses",
+        "add_employees"
+      ]
+    },
+    {
+      "title": "Select a Pay Schedule",
+      "id": "payroll_schedule",
+      "required": true,
+      "completed": false,
+      "requirements": []
+    },
+    {
+      "title": "Sign Documents",
+      "id": "sign_all_forms",
+      "required": true,
+      "completed": false,
+      "requirements": [
+        "add_employees",
+        "federal_tax_setup",
+        "state_setup",
+        "add_bank_info",
+        "payroll_schedule"
+      ]
+    },
+    {
+      "title": "Verify Your Bank Account",
+      "id": "verify_bank_info",
+      "required": true,
+      "completed": false,
+      "requirements": [
+        "add_bank_info"
+      ]
+    }
+  ]
+}
+```
+
+Once all of the above steps are marked with `"completed": true`, you can use the `PUT companies/{company_uuid}/finish_onboarding` [endpoint](/embedded-payroll/reference/get-v1-company-finish-onboarding)
+ to complete company onboarding.
+
+```curl
+curl --request PUT \
+     --url https://api.gusto-demo.com/v1/companies/{company_uuid}/finish_onboarding \
+     --header 'accept: application/json' \
+     --header 'authorization: Bearer {{company_access_token}}' \
+
+``````curl
+const fetch = require('node-fetch');
+
+const url = 'https://api.gusto-demo.com/v1/companies/{company_uuid}/finish_onboarding';
+const options = {
+  method: 'PUT',
+  headers: {accept: 'application/json', authorization: 'Bearer COMPANY_API_TOKEN'}
+};
+
+fetch(url, options)
+  .then(res => res.json())
+  .then(json => console.log(json))
+  .catch(err => console.error('error:' + err));
+
+```
+
+> ## 📘Demo Environment
+> 
+> After a company is finished onboarding, Gusto's Risk team will automatically review the company and either approve the company to Run Payroll or request additional information to verify the company.
+> 
+> We provide the endpoint `PUT companies/{company_uuid}/approve` to facilitate company approvals in the demo environment.
+
+## 14\. Monitor webhook for approval
+
+Using [webhooks](/embedded-payroll/docs/webhooks)
+ you can monitor when the company is approved via the `company.approved` event.
+
+Finishing company onboarding automatically triggers Gusto’s internal approval process which must be completed before a company can process payroll. The approval process can take up to two business days so it is recommended that company onboarding is completed accordingly to ensure employees are paid on time.
+
+> ## 📘Update Information Post Onboarding
+> 
+> *   If you need to make any changes to company or employee info post onboarding, you can use the Company and Employee endpoints to do so.
+> *   If using [Flows (Pre-built UI)](/embedded-payroll/docs/flows-intro)
+>     , recall the Flows to make the necessary adjustments. State tax information cannot be edited via Flows so you must contact Support.
+
