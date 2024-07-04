@@ -1,0 +1,62 @@
+---
+title: "Important Notice"
+description: "Providing access to Contractor Payment Receipts is a required step for all partners"
+---
+> ## ❗️Important Notice
+> 
+> Providing access to Contractor Payment Receipts is a **required step**. All partners must implement Contractor Payment Receipts.
+
+All Contractor Payments which result in ACH movement of money require that a receipt be available once the payment has been funded. Contractor Payments are funded when the ACH transfer for the payment has been initiated. This receipt must contain:
+
+*   A receipt ID
+*   The name of the sender
+*   The name of the recipient
+*   The ACH debit date
+*   The total ACH debit amount
+*   The amounts debited for contractor wage pay, bonus, and reimbursements
+*   Licensee information (The licensee is Gusto)
+*   Link to license details, right to refund and liability information (Links to Gusto)
+
+## Receipt Availability
+
+Receipts are available for all Contractor Payments which are paid by direct deposit and have been funded. Receipt requests for Contractor Payment Receipts will return a 404 Not Found Response if the payment method is by check or the payment has been canceled or reversed.
+
+## Step By Step Instructions
+
+All of the information needed to display a Contractor Payment Receipt can be obtained from a single Contractor Payment Receipt request. To fetch the data, make a GET request to the Get a [Contractor Payment Receipt](https://docs.gusto.com/embedded-payroll/reference/get-v1-contractor_payments-contractor_payment_uuid-receipt)
+ endpoint with the required `contractor_payment_uuid` parameter. This endpoint accepts no optional parameters.
+
+> ## 🚧UUIID Only
+> 
+> The Contractor Payment Receipt endpoint is identified by the Contractor Payment UUID only. Passing the Contractor Payment ID instead of UUID will result in a 404 Not Found response.
+
+### General Contractor Payment Information
+
+The response payload will contain general information about the Contractor Payment. The following data is required and must be displayed:
+
+*   The Contractor Payment ID
+*   The name of the sender
+*   The name of the recipient. This will be the contractor’s full name if an individual or business name if a business.
+*   The ACH debit date
+*   The total ACH debit amount
+
+### Contractor Payment Details
+
+The `contractor_payments` response attribute provides detail about the amounts paid to the contractor. Use the data in this object to display the amounts debited for the contractor’s:
+
+*   Wage pay
+*   Bonus
+*   Reimbursements
+
+### License Information
+
+Processing contractor payments requires a Money Transmitter License (MTL) and the information for the license holder must be displayed on the Payroll Receipt. The licensee for the MTL is Gusto.
+
+The following license information must be shown:
+
+*   License text
+*   Name, address, and phone number of the Licensee
+*   Links to “License”, “Right to Refund”, and “Liability of License”
+
+Text for licensee information and URLs for the links are included in the response object.
+
