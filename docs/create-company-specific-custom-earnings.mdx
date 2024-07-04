@@ -1,0 +1,43 @@
+---
+title: "Custom Earning Types"
+description: "How to create and manage custom earning types in payroll"
+---
+In addition to the standard earning types — like `Bonus`, `Tips`, and `Commission` — you can [create a custom earning type](/embedded-payroll/reference/post-v1-companies-company_id-earning_types)
+ and name it whatever you like. Let's say an employer is a salon and they track sales of hair products in addition to hourly wages and tips. You can create the custom earning, "Sales", and update this earning type so that it appears as a line item on their employee's paystub.
+
+You can create a custom earning type using the `POST companies/{company_uuid}/earning_types`[endpoint](/embedded-payroll/reference/post-v1-companies-company_id-earning_types)
+. The new earning will now be available under the `fixed_compensation` array for every employee.
+
+> ## 📘Unique Earning Names
+> 
+> If an inactive earning type exists with the same name, this will reactivate it instead of creating a new one.
+
+```curl
+curl --request POST \
+     --url https://api.gusto-demo.com/v1/companies/{company_uuid}/earning_types \
+     --header 'accept: application/json' \
+     --header 'authorization: Bearer COMPANY_API_TOKEN' \
+     --header 'content-type: application/json' \
+     --data '{"name":"Sales"}'
+
+``````curl
+const fetch = require('node-fetch');
+
+const url = 'https://api.gusto-demo.com/v1/companies/{company_uuid}/earning_types';
+const options = {
+  method: 'POST',
+  headers: {
+    accept: 'application/json',
+    'content-type': 'application/json',
+    authorization: 'Bearer COMPANY_API_TOKEN'
+  },
+  body: JSON.stringify({name: 'Sales'})
+};
+
+fetch(url, options)
+  .then(res => res.json())
+  .then(json => console.log(json))
+  .catch(err => console.error('error:' + err));
+
+```
+
