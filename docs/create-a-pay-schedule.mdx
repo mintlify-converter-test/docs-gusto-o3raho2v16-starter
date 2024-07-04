@@ -1,0 +1,62 @@
+---
+title: "Create Pay Schedule"
+description: "Guide to create a new pay schedule with optional AutoPilot feature"
+---
+To create a pay schedule for a company use the `POST companies/{company_id}/pay_schedules` [endpoint](/embedded-payroll/reference/post-v1-companies-company_id-pay_schedules)
+. This create a new single default pay schedule for the company.
+
+When you create your Pay Schedule you can also choose to enable AutoPilot. AutoPilot will run payroll automatically one day before your payroll deadlines. You can also set up AutoPilot later using the `PUT companies/{company_uuid}/pay_schedules/{pay_schedule_uuid}` [endpoint](/embedded-payroll/reference/put-v1-companies-company_id-pay_schedules-pay_schedule_id)
+.
+
+```curl
+curl --request POST \
+     --url https://api.gusto-demo.com/v1/companies/{company_uuid}/pay_schedules \
+     --header 'accept: application/json' \
+     --header 'authorization: Bearer COMPANY_API_TOKEN' \
+     --header 'content-type: application/json' \
+     --data '
+{
+     "frequency": "Twice per month",
+     "anchor_pay_date": "2021-10-15",
+     "anchor_end_of_pay_period": "2021-10-15",
+     "day_1": 15,
+     "auto_pilot": false,
+     "version": "68934a3e9455fa72420237eb05902327"
+}
+'
+
+``````curl
+const fetch = require('node-fetch');
+
+const url = 'https://api.gusto-demo.com/v1/companies/{company_uuid}/pay_schedules';
+const options = {
+  method: 'POST',
+  headers: {
+    accept: 'application/json',
+    'content-type': 'application/json',
+    authorization: 'Bearer COMPANY_API_TOKEN'
+  },
+  body: JSON.stringify({
+    frequency: 'Monthly',
+    anchor_pay_date: '2021-10-15',
+    anchor_end_of_pay_period: '2021-10-15',
+    day_1: 15,
+    auto_pilot: false,
+    version: '68934a3e9455fa72420237eb05902327'
+  })
+};
+
+fetch(url, options)
+  .then(res => res.json())
+  .then(json => console.log(json))
+  .catch(err => console.error('error:' + err));
+
+```
+
+> ## 📘Anchor Pay Date
+> 
+> 1.  Payroll of any kind (regular, off-cycle, etc.) cannot be run in a quarter prior to the quarter that the anchor pay date falls in.
+> 2.  If payroll (regular or off-cycle) is not run by the set anchor pay date, the field will be invalidated and the pay schedule will need to be set again.
+> 3.  If the anchor pay date is changed prior to running the first payroll, the 8655 will need to be resigned by the company signatory.
+>     1.  Context: the anchor pay date is reported on the Federal 8655 form (authorization for Gusto to pay & file taxes on behalf of the company). Because of this, our authorization starts in the month associated with the anchor pay date. If any information pertaining to this date changes, that form will be regenerated and need signature again.
+
