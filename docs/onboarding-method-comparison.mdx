@@ -1,0 +1,51 @@
+---
+title: "Onboarding Employees"
+description: "Overview of how employees can be added during company onboarding or afterwards"
+---
+## Onboarding Employees
+
+Employees may be added during a company’s onboarding for payroll, or at any time after this initial onboarding is complete. An employee can be setup in one of two ways:
+
+1.  By Employer
+2.  By Employee (“Self-onboarding”)
+
+Both can be done using Gusto’s pre-built Flows or using the Employee APIs to build custom UI/UX.
+
+### Employee onboarding by Employer
+
+In this option, Employers handle all of the collection and entry of employee data.
+
+1.  Employer collects employee information (e.g., through paper or secure digital forms).
+2.  Employer enters the employee information, onboarding them into the company.
+
+### Employee Self-Onboarding
+
+Employee Self-Onboarding is a feature that enables your employers to hire a new employee and invite them to onboard and self-manage their personal information required for payroll. This limits the exposure of employee’s sensitive data over insecure channels (e.g., email), scales with organizations that need to onboard many employees, and saves time for employers and employees alike.
+
+> ## 📘
+> 
+> Gusto will not send emails to your end user’s employees. All email or in-app invitations to self-onboard must be incorporated into your Embedded Payroll build.
+
+With employee self-onboarding, employers delegate some of the onboarding to the employee:
+
+1.  Employer enters basic information about the employee (e.g., name, email, compensation).
+2.  Employer invites the employee to self-onboard.
+3.  Employee opens the flow to self-onboard, entering their relevant information.
+4.  Employee completes the form which notifies the Employer to review.
+5.  Employer reviews the employee’s data and onboards the employee into the company.
+
+The following information is required to invite an employee to self-onboard:
+
+*   First name, last name
+*   Start date
+*   Work address
+*   Compensation details (FLSA, payment amount, "per")
+
+> ## 📘
+> 
+> Whether you decide to implement a custom Employee Self-Management experience or use our Flows, it’s important to [retrieve](/embedded-payroll/reference/get-v1-employees-employee_id-onboarding_status)
+>  the employee’s onboarding status to track the required onboarding steps and respective completion status.
+> 
+> All statuses in the employee’s onboarding status reference require manual update with the `PUT employees/{employee_id}/onboarding_status` [endpoint](/embedded-payroll/reference/put-v1-employees-employee_id-onboarding_status)
+> . Any other status transitions will happen automatically, such as: `self_onboarding_invited`, `self_onboarding_invited_started`, `self_onboarding_invited_overdue` and `self_onboarding_completed_by_employee`.
+
