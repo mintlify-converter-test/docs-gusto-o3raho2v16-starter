@@ -1,0 +1,39 @@
+---
+title: "BankAccount Webhooks"
+description: "List of events for company bank accounts"
+---
+When subscribed to the `BankAccount` webhooks you will receive the following events:
+
+| event\_type | description | references |
+| --- | --- | --- |
+| company.bank\_account.created | Company bank account has been created | {"company\_uuid": ""} |
+| company.bank\_account.verified | Company bank account has been verified | {"company\_uuid": ""} |
+| company.bank\_account.updated | Company bank account has been updated | {"company\_uuid": ""} |
+| company.bank\_account.deleted | Company bank account has been deleted | {"company\_uuid": ""} |
+| contractor.bank\_account.created | Contractor bank account has been created | {"contractor\_uuid": ""} |
+| contractor.bank\_account.updated | Contractor bank account has been updated | {"contractor\_uuid": ""} |
+| contractor.bank\_account.deleted | Contractor bank account has been deleted | {"contractor\_uuid": ""} |
+| employee.bank\_account.created | Employee bank account has been created | {"employee\_uuid": ""} |
+| employee.bank\_account.updated | Employee bank account has been updated | {"employee\_uuid": ""} |
+| employee.bank\_account.deleted | Employee bank account has been deleted | {"employee\_uuid": ""} |
+
+Bank account webhooks contain `references` that will have the additional UUIDs to call the Gusto API to retrieve the entire **entity**. The example below contains **references** because an employee UUID is required to retrieve the bank account from the API /v1/employees/{employee\_id}/payment\_method
+
+### Example payload
+
+```json
+{
+  "entity_id": 7757841869854264,
+  "timestamp": 1673976552,
+  "event_type": "employee.bank_account.created",
+  "references": {
+    "employee_uuid": "c41833cb-9c89-4f34-9fdc-13c6e603d38e"
+  },
+  "entity_type": "BankAccount",
+  "entity_uuid": "1447e450-d83b-4118-8e17-72d1c470351c",
+  "resource_id": 7757616924925244,
+  "resource_type": "Company",
+  "resource_uuid": "85574607-c15a-42fe-8f53-1bb1b58c8055"
+}
+```
+
