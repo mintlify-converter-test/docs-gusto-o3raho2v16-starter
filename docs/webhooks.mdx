@@ -1,0 +1,187 @@
+---
+title: "Overview"
+description: "Introduction to webhooks and asynchronous API endpoints in Gusto"
+---
+## Overview
+
+A webhook is an HTTP request that delivers information about an event as it happens. We recommend that you integrate with Gusto’s webhooks infrastructure so that your application can perform subsequent business logic after it receives a webhook event.
+
+A number of Gusto’s API endpoints are asynchronous in nature. For example, [submitting an unprocessed payroll](/embedded-payroll/reference/put-v1-companies-company_id-payrolls-payroll_id-submit)
+ is an asynchronous process as the payroll is being calculated and processed. When a payroll is paid out, your application may leverage our `payroll.paid event`. Gusto will publish this webhook event when payroll credits have been generated and payments will be made.
+
+See a list of all webhook event types that Gusto offers [here](/embedded-payroll/docs/webhook-events)
+.
+
+> ## 🚧
+> 
+> You can only create a webhook subscription if you have one application under your organization. Having more than one application will return an error.
+
+## Event payload
+
+It’s possible that a single API request will generate multiple webhook events. For example, when a partner-managed company is created, we may push multiple events to your application.
+
+Here is an example of a webhook event payload:
+
+```json
+{
+  "event_type": "company.provisioned",
+  "resource_type": "Company",
+  "resource_id": 7756341741171842,
+  "resource_uuid": "5df911a0-e8e9-412d-8aaf-a46ad193dd96",
+  "entity_type": "Company",
+  "entity_id": 7756341741171842,
+  "entity_uuid": "5df911a0-e8e9-412d-8aaf-a46ad193dd96",
+  "timestamp": 1671058841,
+}
+
+```
+
+The `company.provisioned` event indicates that an OAuth connection has been established between the company and the partner. Note that this event is always fired, regardless of whether your application has a subscription to the Company entity type.
+
+For all webhook events, the `resource_type` will be Company. The field `entity_type` refers to the underlying API resource with the state change.
+
+## Getting started
+
+The easiest way to get started with your webhooks is by using our Developer Portal. If you would like to go through our API, instead, please see the [section below](https://docs.gusto.com/embedded-payroll/docs/webhooks#1-set-up-an-https-endpoint-in-your-application-that-can-accept-webhook-requests-via-a-post-method)
+.
+
+To get started, sign into your [Developer Portal](https://dev.gusto.com)
+ account. Click into the Application that your webhook will belong to, and select the “Webhook subscriptions” tab. This tab will allow you to add, verify, edit, and view your webhook subscriptions.
+
+<img className="block" src="images/files_readme_io/_b5e8c2b_Screenshot_2024_06_03_at_4.25.18_PM.png" alt="" />
+
+Once your verified subscription starts receiving events, you will be able to view them in your subscription’s details page. You can use the Event activity table to view the last n events received, and can search by specific subscription types. Note that your subscription must be subscribed to the [subscription type](/embedded-payroll/docs/webhook-events)
+ of interest in order to be notified of those events. To access all events, regardless of your subscription status, you can ping our [Events API](/embedded-payroll/reference/get-events)
+.
+
+<img className="block" src="images/files_readme_io/_474bd8f_Screenshot_2024_05_31_at_3.36.47_PM.png" alt="" />
+
+Start receiving webhook events via API from Gusto by following the steps below:
+
+### 1\. Set up an HTTPS endpoint in your application that can accept webhook requests via a POST method.
+
+Set up an HTTPS endpoint in your application that can accept webhook requests via a POST method.
+
+Your endpoint should be able to handle POST requests with a JSON payload, and should quickly return a 2xx successful response within 10 seconds.
+
+In absence of this acknowledgement, our system will assume delivery failure and continue to retry up to 16 times over the course of 3 days using an exponential backoff scheme.
+
+### 2\. Create a webhook subscription
+
+When you create a webhook subscription, you should provide an initial set of subscription types that you’d like your application to receive. You may update this subscription at a later time. See all webhook event types here.
+
+The `url` noted here should be your application’s webhook URL. Once created, the webhook subscription should be in `pending` status.
+
+```curl
+curl --request POST \
+     --url https://api.gusto-demo.com/v1/webhook_subscriptions \
+     --header 'accept: application/json' \
+     --header 'content-type: application/json' \
+  --header 'Authorization: Token API_TOKEN'\
+     --data '
+{
+     "subscription_types": [\
+          "Company",\
+          "Employee"\
+     ],
+     "url": "https://leading-role-app.com/subscriber"
+}
+'
+
+```
+
+```javascript
+const fetch = require('node-fetch');
+
+const url = 'https://api.gusto-demo.com/v1/webhook_subscriptions';
+const options = {
+  method: 'POST',
+  headers: {accept: 'application/json', 'content-type': 'application/json'},
+  body: JSON.stringify({
+    subscription_types: ['Company', 'Employee'],
+    url: 'https://leading-role-app.com/subscriber'
+  })
+};
+
+fetch(url, options)
+  .then(res => res.json())
+  .then(json => console.log(json))
+  .catch(err => console.error('error:' + err));
+
+```
+
+### 3\. Verify your new webhook subscription
+
+Once the subscription has been created, we will send a POST request to your webhooks URL with a `verification_token`. This step helps Gusto validate that webhook events are reaching its intended destination, and helps you troubleshoot any issues with webhook delivery.
+
+If your endpoint does not receive a `verification_token`, please ensure that your webhooks endpoint is set up correctly and actively listening.
+
+Once you receive a `verification_token`, call the PUT webhook\_subscriptions/{webhook\_subscription\_uuid}/verify [endpoint](/embedded-payroll/reference/put-v1-verify-webhook-subscription-uuid)
+ to verify the endpoint and begin receiving webhook events.
+
+We recommend that you save this `verification_token` for the next step. This token is used to help you verify that events were sent by Gusto.
+
+```curl
+curl --request PUT \
+     --url https://api.gusto-demo.com/v1/webhook_subscriptions/{webhook_subscription_uuid}/verify \
+     --header 'accept: application/json' \
+     --header 'content-type: application/json' \
+     --data '
+{
+     "verification_token": "asefasedfe23e234easd"
+}
+'
+
+```
+
+```javascript
+const fetch = require('node-fetch');
+
+const url = 'https://api.gusto-demo.com/v1/webhook_subscriptions/{webhook_subscription_uuid}/verify';
+const options = {
+  method: 'PUT',
+  headers: {accept: 'application/json', 'content-type': 'application/json'},
+  body: JSON.stringify({verification_token: 'asefasedfe23e234easd'})
+};
+
+fetch(url, options)
+  .then(res => res.json())
+  .then(json => console.log(json))
+  .catch(err => console.error('error:' + err));
+
+```
+
+### 4\. Secure your webhook endpoint
+
+We highly recommend that your application verify the source of incoming webhook requests before processing events. This step is optional but highly recommended to help prevent bad actors from engaging in unauthorized activities on your server.
+
+Gusto computes a hash message authentication code (HMAC) of the event payload using the verification\_token provided in the verification step as the secret and SHA256 as the hash function. Webhook event payloads include a `X-Gusto-Signature` header, which is set to the computed HMAC.
+
+Event payload integrity can be verified by the subscriber by computing the event payload HMAC and checking that it is equal to the HMAC in the `X-Gusto-Signature` header.
+
+## Best Practices
+
+We recommend following these best practices to ensure the security and performance of your application.
+
+### Subscribe to only the webhook events that your application needs
+
+This can help reduce the amount of events that your server needs to process.
+
+### Ensure that your event handlers are idempotent
+
+Duplicate events may occur as a result of concurrent processing within our system, so your application’s webhook endpoint may occasionally receive the same event multiple times.
+
+Achieving idempotency can be accomplished by monitoring the processing status of webhook events in your application. In each event payload, Gusto provides a uuid, a unique identifier for the webhook event. Storing these UUIDs in a table enables your application to determine whether an event has already been processed.
+
+### Return a 2xx response promptly
+
+Your server should respond with a 2xx response to confirm successful receipt of a webhook event delivery. Without it, Gusto will continue to retry sending the webhook to your application. This may impact your future webhook deliveries, and Gusto may deactivate your webhook subscription.
+
+### Handle events asynchronously
+
+Because delivery order is not guaranteed, we recommend using the event payload's timestamp field, which indicates when the event occurred, to reorder the events in your system.
+
+We also recommend that you set up a queue to help process your event payloads asynchronously. When your application receives a webhook, it should still first respond 2xx to confirm receipt of the event delivery, and then queue the event to be processed asynchronously by your application.
+
+This is beneficial to your application so that you can process events at a rate that your server can handle. It’s possible that Gusto sends a large volume of events in a short amount of time, especially if bulk actions have recently been taken. Implementing asynchronous event processing will ensure that your application can handle such volume spikes and reliably process all incoming webhook requests. It also gives your application more flexibility to manage resources more efficiently.
+
