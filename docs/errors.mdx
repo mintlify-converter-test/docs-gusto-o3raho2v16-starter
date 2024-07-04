@@ -1,0 +1,107 @@
+---
+title: "Error Message Formats"
+description: "Error messages have consistent JSON structures from version 2023-02-01."
+---
+Starting from version `2023-02-01`, error messages will have consistent JSON structures. The shape may differ between the error types. Below are the 3 error types with examples of their shape.
+
+### Basic Error Shape
+
+All errors start with the basic error shape and can be expanded upon.
+
+When a request results in an error, the response JSON contains an array of errors with the following fields  
+**`error_key`**: specifies where the error occurs. Typically this key identifies the attribute/parameter related to the error. In the example below, the error is a request error.  
+**`category`**: specifies the type of error. The category provides error groupings and can be used to build custom error handling in your integration. For a complete list of all error categories please review the [error categories guide](/embedded-payroll/docs/error-categories)
+.  
+**`message`** : provides details about the error. Except for a few types of errors, the message can be surfaced directly to the end user.  
+**`metadata`**: contains relevant data to identify the resource in question when applicable. In the majority of cases, `entity_uuid` and `entity_type` will be provided, but the data may change based on the domain of the endpoint.
+
+```json
+{
+  "errors": [
+    {
+      "error_key": "base",
+      "category": "payroll_blocker",
+      "message": "Company or employee address could not be verified. Please ensure all addresses are valid.",
+      "metadata": {
+        "key": "geocode_error"
+      }
+    }
+  ]
+}
+```
+
+### Resource Error Shape
+
+When working with a specific resource (employee, company, payroll, etc), multiple errors can be returned.
+
+```json
+{
+  "errors": [
+    {
+      "error_key": "first_name",
+      "category": "invalid_attribute_value",
+      "message": "First name is required"
+    },
+    {
+      "error_key": "date_of_birth",
+      "category": "invalid_attribute_value",
+      "message": "Date of birth is not a valid date"
+    }
+  ]
+}
+```
+
+Some endpoints perform bulk operations on multiple resources. When there are multiple errors on multiple resources, the error object in the response will include a metadata hash. This metadata can be used to help identify the entities associated with the errors.
+
+```json
+{
+  "errors": [
+    {
+      "error_key": "base",
+      "category": "invalid_attribute_value",
+      "message": "Balance must be less than or equal to max balance (150.0)",
+      "metadata": {
+        "entity_uuid": "ac597ee9-93c5-4153-9b10-f7d230eee506",
+        "entity_type": "Employee"
+      }
+    },
+    {
+      "error_key": "base",
+      "category": "invalid_attribute_value",
+      "message": "Balance must be less than or equal to max balance (150.0)",
+      "metadata": {
+        "entity_uuid": "34af0140-9b55-41a3-8ee0-0f27ad0c51d9",
+        "entity_type": "Employee"
+      }
+    }
+  ]
+}
+```
+
+### Nested Error Shape
+
+When the error attribute is nested inside a parent attribute, the errors are nested inside a wrapping error with “nested\_error” category. Use the category (**`nested_error`**) to programmatically identify and parse nested errors.
+
+```json
+{
+  "errors": [
+    {
+      "error_key": "fields",
+      "category": "nested_errors",
+      "errors": [
+        {
+          "error_key": "signature",
+          "category": "invalid_attribute_value",
+          "message": "Field is required."
+        },
+        {
+          "error_key": "phone",
+          "category": "invalid_attribute_value",
+          "message": "Field is required."
+        }
+      ]
+    }
+  ]
+}
+```
+
