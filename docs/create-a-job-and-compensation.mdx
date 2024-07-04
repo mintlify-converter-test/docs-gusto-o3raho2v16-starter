@@ -1,0 +1,198 @@
+---
+title: "Employee Payment Methods"
+description: "Various ways employees are paid and how jobs are defined in Gusto"
+---
+Employees can be paid in a multitude of ways. Some employees are paid on an hourly basis, some are salaried, and some are paid in a combination of ways. What an employee gets paid is determined by their jobs and compensations in Gusto.
+
+A job is an employee's title and pay rate. Each `job_id` is unique to a singular employee, but each employee can have multiple jobs (or `job_id`s). Two employees cannot share the same `job_id` even if they share the same title.
+
+Before creating a job, you must have an employee. You can create an employee using the `POST employees` [endpoint](/embedded-payroll/reference/post-v1-employees)
+. For more information, read the [Onboard a W2 Employee](/embedded-payroll/docs/onboard-a-w2-employee)
+ guide.
+
+## 1\. Create a Job
+
+You can create a job using the `POST employees/{employee_uuid}/jobs` [endpoint](/embedded-payroll/reference/post-v1-jobs-job_id)
+.
+
+> ## 📘hire\_date
+> 
+> The `hire_date` is the day the employee begins in this role.
+
+```curl
+curl --request POST \
+     --url https://api.gusto-demo.com/v1/employees/{employee_uuid}/jobs \
+     --header 'accept: application/json' \
+     --header 'authorization: Bearer ACCESS_TOKEN' \
+     --header 'content-type: application/json' \
+     --data '
+{
+     "title": "Regional Manager",
+     "hire_date": "2023-06-21"
+}
+'
+
+``````curl
+const fetch = require('node-fetch');
+
+const url = 'https://api.gusto-demo.com/v1/employees/{employee_uuid}/jobs';
+const options = {
+  method: 'POST',
+  headers: {
+    accept: 'application/json',
+    'content-type': 'application/json',
+    authorization: 'Bearer COMPANY_API_TOKEN'
+  },
+  body: JSON.stringify({
+    title: 'Regional Manager',
+    location_id: 1363316536327002,
+    hire_date: '2022-06-21'
+  })
+};
+
+fetch(url, options)
+  .then(res => res.json())
+  .then(json => console.log(json))
+  .catch(err => console.error('error:' + err));
+
+```
+
+This API call will create a job with an hourly compensation of "0.00". In the response, you will see a `compensations` array object similar to:
+
+```json
+  "compensations": [
+        {
+            "uuid": "96e56730-a304-4dcc-a819-1716cd10589d",
+            "employee_uuid": "259738db-2895-4e5b-ac9d-1ee296f54824",
+            "version": "ca8a89029973e3a42df81d26092ad16d",
+            "payment_unit": "Hour",
+            "flsa_status": "Nonexempt",
+            "adjust_for_minimum_wage": false,
+            "minimum_wages": [],
+            "job_uuid": "e51df53e-70d1-4877-872e-4b39eb181899",
+            "effective_date": "2023-08-21",
+            "rate": "0.00"
+        }
+  ],
+
+```
+
+## 2\. Update Compensation
+
+Creating a job automatically creates a non-exempt, hourly compensation of $0/hr. Compensation for a job should be updated in subsequent API call using the `PUT compensations/{compensation_uuid}` [endpoint](/embedded-payroll/reference/put-v1-compensations-compensation_id)
+.
+
+Compensations contain information on how much is paid out for a job. The job object can have multiple compensations to account for changes over time, such as merit increases, **but only one compensation is active at a time**. The current compensation is the one with the most recent `effective_date`.
+
+> ## 📘flsa\_status
+> 
+> The Fair Labor Standards Act (FLSA) establishes minimum wage, overtime pay, recordkeeping, and youth employment standards affecting employees in the private sector and in federal, state, and local governments. To learn more refer to our [support center](https://support.gusto.com/article/112614926100000/Overtime-laws-by-state%5Bguide)
+> .
+> 
+> Allowed values: `Exempt` `Salaried Nonexempt` ,`Nonexempt` ,`Owner`.
+
+```curl
+curl --request PUT \
+     --url https://api.gusto-demo.com/v1/compensations/{compensation_uuid} \
+     --header 'accept: application/json' \
+     --header 'authorization: Bearer ACCESS_TOKEN' \
+     --header 'content-type: application/json' \
+     --data '
+{
+  "version": "ca8a89029973e3a42df81d26092ad16d",
+  "adjust_for_minimum_wage": false,
+  "rate": "20.00",
+  "payment_unit": "Hour",
+  "flsa_status": "Nonexempt"
+}
+
+``````curl
+const fetch = require('node-fetch');
+
+const url = 'https://api.gusto-demo.com/v1/compensations/{compensation_uuid}';
+const options = {
+  method: 'PUT',
+  headers: {
+    accept: 'application/json',
+    'content-type': 'application/json',
+    authorization: 'Bearer COMPANY_API_TOKEN'
+  },
+  body: JSON.stringify({
+    version: 'b6d6378ce263632a10a2bef78e7502bb',
+    rate: '60000.00',
+    payment_unit: 'Year',
+    flsa_status: 'Exempt'
+  })
+};
+
+fetch(url, options)
+  .then(res => res.json())
+  .then(json => console.log(json))
+  .catch(err => console.error('error:' + err));
+
+```
+
+## 3\. Create a Compensation
+
+You can update the rate of a job using the create a compensation [endpoint](/embedded-payroll/reference/post-v1-compensations-compensation_id)
+ with an effective date.
+
+```curl
+curl --request POST \
+     --url https://api.gusto-demo.com/v1/jobs/job_id/compensations \
+     --header 'accept: application/json' \
+     --header 'content-type: application/json' \
+     --data 
+{
+  "id": 1363316536327004,
+  "uuid": "96e56730-a304-4dcc-a819-1716cd10589d",
+  "version": "98jr3289h3298hr9329gf9egskt3kagri32qqgiqe3872",
+  "job_id": 1123581321345589,
+  "job_uuid": "d8f8fbe7-496d-4b69-86f0-1e2d1b73a086",
+  "rate": "25.00",
+  "payment_unit": "Hour",
+  "flsa_status": "Nonexempt",
+  "effective_date": "2023-10-17",
+  "adjust_for_minimum_wage": false,
+  "minimum_wages": []
+}
+'
+
+``````curl
+const fetch = require('node-fetch');
+
+const url = 'https://api.gusto-demo.com/v1/compensations/{compensation_uuid}';
+const options = {
+  method: 'PUT',
+  headers: {
+    accept: 'application/json',
+    'content-type': 'application/json',
+    authorization: 'Bearer COMPANY_API_TOKEN'
+  },
+  body: JSON.stringify({
+    version: 'b6d6378ce263632a10a2bef78e7502bb',
+    rate: '60000.00',
+    payment_unit: 'Year',
+    flsa_status: 'Exempt'
+  })
+};
+
+fetch(url, options)
+  .then(res => res.json())
+  .then(json => console.log(json))
+  .catch(err => console.error('error:' + err));
+
+```
+
+## 4\. Delete a Compensation
+
+You can delete a compensation for a job that hasn't been processed on payroll using the Delete a compensation [endpoint](/embedded-payroll/reference/delete-v1-compensations-compensation_id)
+.
+
+```curl
+curl --request DELETE \
+     --url https://api.gusto-demo.com/v1/compensations/compensation_id
+     --header 'authorization: Bearer ACCESS_TOKEN'
+
+```
+
