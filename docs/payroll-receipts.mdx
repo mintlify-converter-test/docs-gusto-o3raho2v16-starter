@@ -1,0 +1,92 @@
+---
+title: "Important Notice"
+description: "Providing access to Payroll Receipts is a required step"
+---
+> ## ❗️Important Notice
+> 
+> Providing access to Payroll Receipts is a **required** step. All partners must implement Payroll Receipts.
+
+All Payrolls which result in ACH movement of money require that a receipt be available once the payroll has been processed. (See [Payroll Statuses](https://docs.gusto.com/embedded-payroll/docs/payroll-statuses)
+ for details on “processed” status.). This receipt must contain:
+
+*   A receipt ID
+*   The name of the sender
+*   The name of the recipients
+*   The ACH debit date
+*   The total ACH debit amount
+*   The amounts debited for tax payments, employee net pay, reimbursements, and child support garnishments
+*   The tax amounts paid to each tax agency
+*   The net pay, reimbursement, and garnishment amounts for each employee
+*   Licensee information (The licensee is Gusto)
+*   Link to license details, right to refund and liability information (Links to Gusto)
+
+## Receipt Availability
+
+Receipts are available for [any Payroll with a “processed” status](https://docs.gusto.com/embedded-payroll/docs/payroll-statuses)
+ of true. This includes payrolls which have been processed, but have not yet resulted in ACH money transfers. Receipt requests for Payrolls that have been saved but not yet processed will return a 404 Not Found Response until processing is complete.
+
+## Step By Step Instructions
+
+All of the information needed to display a Payroll Receipt can be obtained from a single Payroll Receipt request. To fetch the data, make a GET request to the [Get a Payroll Receipt endpoint](https://docs.gusto.com/embedded-payroll/reference/get-v1-payment-receipts-payrolls-payroll_uuid)
+ with the required `payroll_uuid` parameter. This endpoint accepts no optional parameters.
+
+> ## 🚧UUID Only
+> 
+> The Payroll Receipt endpoint is identified by the **payroll UUID** only. Passing the Payroll ID instead of UUID will result in a 404 Not Found response.
+
+### General Payroll Information
+
+The response payload will contain general information about the payroll. The following data is required and must be displayed:
+
+*   The receipt ID
+*   The name of the sender
+*   The name of the recipients
+*   The ACH debit date
+*   The total ACH debit amount
+*   The amounts debited for tax payments, employee net pay, reimbursements, and child support garnishments
+
+Certain fields on the response object include text copy that should be used within your layout. The `name_of_recipient` will always be “Payroll Recipients” and should be annotated with the copy provided in the the `recipient_notice` field. This copy reads “Payroll recipients include the employees listed below plus the tax agencies for the taxes listed below.” Using this provided text from the response simplifies the process of authoring required copy in your view and mirrors the copy used within the Gusto app.
+
+### Tax Line Items
+
+Tax line items provide detail about the taxes owed to various agencies for this payroll.
+
+For each tax the following information must be shown:
+
+*   Name of the tax agency
+*   Total tax amount for that agency
+
+Each tax has a name which is the name of the agency receiving the money and an amount which is the total amount of both employer and employee taxes.
+
+> ## 📘All Taxes Included
+> 
+> Note that the taxes array contains all taxes related to this payroll, not only the taxes debited to be paid by Gusto. This means that the total amount of all individual tax line items may add up to a value that is greater than the value in `totals[tax_debit]`.
+
+### Employee Line Items
+
+Employee line items provide detail about the amounts debited for each employee. All employees are returned in the `employee_compensations` array field but not all employees must be displayed. Employees with an excluded value of true received no compensation for this payroll and do not need to be included in the receipt.
+
+For each employee the required values must be shown:
+
+*   Employee full name
+*   Total net pay
+*   Total tax amount
+*   Total reimbursements
+*   Total child support garnishment
+
+> ## 📘All Employees Included
+> 
+> Note that the `employee_copensations` array includes information on all employees. Employees paid by check do not have net pay or reimbursements debited for payment by gusto. This means that those amounts are not included in calculations for total net pay or reimbursement values for the payroll.
+
+### License Information
+
+Processing payroll requires a Money Transmitter License (MTL) and the information for the license holder must be displayed on the Payroll Receipt. The licensee for the MTL is Gusto.
+
+The following license information must be shown:
+
+*   License text
+*   Name, address, and phone number of the Licensee
+*   Links to “License”, “Right to Refund”, and “Liability of License”
+
+Text for licensee information and URLs for the links are included in the response object.
+
