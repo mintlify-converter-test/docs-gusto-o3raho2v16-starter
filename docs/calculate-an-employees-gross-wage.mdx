@@ -1,0 +1,324 @@
+---
+title: "Payroll UI Preview"
+description: "Preview employee's gross wages in payroll UI"
+---
+If you’re building your own payroll UI instead of leveraging Gusto’s Run Payroll Flow, it can greatly benefit the end-user to see a preview of their employee’s gross wages while they are inputting hours worked and fixed compensations. Normally you would not call Gusto’s calculate a payroll endpoint until after hours and fixed compensations have been inputted, so in order to show a gross wage preview you will need to calculate gross wages using the equations below.
+
+## Types of Wages
+
+### Regular Wages
+
+Regular wages are the agreed-upon amount of money that an employer will pay their employee based on their employee status (Exempt or Non-Exempt).
+
+*   Regular Wages for **Exempt Employees** are commonly referred to as their **salary** and are generally paid on a yearly basis.
+*   Regular wages for **Non-Exempt Employees** are the amount of money they are paid by the hour or the total time they worked during the workweek. This is commonly called their **hourly rate**.
+
+### Supplemental Wages
+
+Supplemental wages are amount of money paid to an employee by an employer that isn't considered part of their regular wages.
+
+According to [Publication 15](https://www.irs.gov/pub/irs-pdf/p15.pdf)
+, supplemental wages include, but are not limited to:
+
+*   Bonuses
+*   Commissions
+*   Overtime pay
+*   Severance pay
+*   Awards/Prizes
+*   Reported tips
+
+Unlike regular wages, supplemental wages do not have a specific calculation that employers have to follow (with the exception of Overtime Hours). These wages can vary from company to company.
+
+## How to Calculate an Exempt Employee's Regular Wages
+
+An [exempt employee](https://gusto.com/resources/articles/hr/team-management/exempt-vs-nonexempt-employee)
+ is an individual who is paid a lump sum of wages, usually based on a yearly amount, and is not contingent on the number of hours they actually work. Most salaried employees are not allowed overtime pay, as long as they are making the IRS weekly minimum wage ($785/week). Since an exempt employee's wages are not contingent on the actual time they worked, you will instead use the company's pay schedule when calculating an exempt employee's regular wages.
+
+*   **Equation**: Yearly Salary ÷ Number of pay periods per year = Regular wage per pay period
+
+| Pay Period | Definition | Total Pay Periods Per Year  (Eq= Equation) |
+| --- | --- | --- |
+| **Weekly** | You pay your employee every week on a specific day of the week (like Friday) | **52** Pay Periods  **Eq**: 365 days a year÷7 days |
+| **Every other week or Bi-weekly** | You pay your employee every two weeks on a specific day of the week (like every other Friday) | **26** Pay Periods  **Eq**: 365 days a year÷14 days |
+| **Semi-Monthly** | You pay your employee twice a month on a specific date (like the 5th and the 20th) | **24** Pay Periods  **Eq**: 12 months a year \* 2 times a month |
+| **Monthly** | You pay your employee once a month on a specific day (like the 25th) | **12** Pay Periods  **Eq**: N/A |
+
+**Example**:
+
+*   Exempt Employee: `job_uuid` has a `rate` of `“50000.00”` per `“Year”`
+*   Company Pay Schedule: `Every other week`
+*   $50,000.00 ÷ 26 pay periods = $1,923.0769 or **$1,923.08**
+
+**Employee Job:**
+
+```json
+{
+  "id": 7757869441038000,
+  "uuid": "d6d1035e-8a21-4e1d-89d5-fa894f9aff97",
+  "version": "d0e719137f89ca3dd334dd4cc248ffbb",
+  "employee_id": 7757869432666661,
+  "employee_uuid": "948daac8-4355-4ece-9e2a-229898accb22",
+  "current_compensation_id": 7757869444844981,
+  "current_compensation_uuid": "ea8b0b90-1112-4f9d-bb93-bf029bc8537a",
+  "payment_unit": "Year",
+  "primary": true,
+  "title": "Account Director",
+  "compensations": [
+    {
+      "id": 7757869444844981,
+      "uuid": "ea8b0b90-1112-4f9d-bb93-bf029bc8537a",
+      "version": "994b75511d1debac5d7e2ddeae13679f",
+      "payment_unit": "Year",
+      "flsa_status": "Exempt",
+      "job_id": 7757869441038000,
+      "job_uuid": "d6d1035e-8a21-4e1d-89d5-fa894f9aff97",
+      "effective_date": "2023-01-20",
+      "rate": "50000.00"
+    }
+  ],
+  "rate": "50000.00",
+  "hire_date": "2023-01-20",
+  "location_id": 7757727716657803,
+  "location": {
+    "id": 7757727716657803,
+    "street_1": "412 Kiera Stravenue",
+    "street_2": "Suite 391",
+    "city": "San Francisco",
+    "state": "CA",
+    "zip": "94107",
+    "country": "USA",
+    "inactive": false
+  }
+}
+```
+
+**Company Pay Schedule:**
+
+```json
+{
+  "id": 7756341794910062,
+  "uuid": "e133555d-b34d-4116-83f9-1d7d3067163d",
+  "version": "facf366a3e672fdc4156c25124a4c9f1",
+  "day_1": null,
+  "day_2": null,
+  "frequency": "Every other week",
+  "anchor_pay_date": "2022-09-30",
+  "name": "Salaried",
+  "custom_name": null,
+  "auto_pilot": false,
+  "anchor_end_of_pay_period": "2022-09-23"
+}
+```
+
+## How to Calculate a Non-Exempt Employee's Regular Wages
+
+A [non-exempt employee](https://gusto.com/resources/articles/hr/team-management/exempt-vs-nonexempt-employee)
+ is an individual who must be paid at least the minimum wage for all hours worked. Generally speaking, these are employees who are paid on an hourly basis. Non-exempt employees can be paid overtime for over 40 hours worked in the work week.
+
+Minimum wage can vary based on the type of job the employee is working and can vary from state to state.
+
+> ## 📘
+> 
+> The Federal minimum wage is $7.25 per hour. General rule of thumb is if a state has a higher minimum wage, the company operating in that state should pay the higher wage to the employee.
+
+When calculating regular wages we will look at the jobs referenced and use the compensation with the effective date of the beginning of that pay period. Learn more about referencing jobs and compensations below.
+
+*   **Equation**: Hourly rate \* Number of hours worked = Regular wages for that pay period
+
+**Example**:
+
+*   Non-Exempt Employee: `job_uuid` has a `rate` of `“25.00”` per `"Hour"`
+*   Employee works 35 `Regular Hours`
+*   $25 \* 35 hours = **$875.00**
+
+## How to Calculate a Non-Exempt Employee's Regular Wages with Overtime Hours
+
+The general rule is that any time over 40 hours worked in a workweek is subject to overtime. Per FLSA guidelines, an employee's hourly rate will be increased by 1.5 times their normal pay. There may be instances where that rate may differ, so it's important that Employers review the state laws around overtime pay.
+
+*   **Equation**: Regular hourly rate \* `"compensation_multiplier": 1.5` = Overtime hourly rate
+
+**Example**:
+
+*   Non-Exempt Employee: `job_uuid` has a `rate` of `“30.00”` per `"Hour"`
+*   Employee works 48 total hours
+    *   40 `Regular Hours`
+    *   8 `Overtime` Hours
+
+**Regular Hours Pay:**
+
+*   $30 \* 40 hours = **$1200.00**
+
+**Overtime Hours Pay:**
+
+*   $30.00 x 1.5 = $45.00 (Overtime Hourly Rate)
+*   $45.00 x 8 `Overtime` Hours = **$360.00**
+
+**Total Regular Wages:**
+
+*   $1,200.00 + $360.00 = **$1,560.00**
+
+### Using Jobs to Calculate Regular Wages
+
+Within the payroll object, we return an array of `employee_compensations` including `employee_uuids` and their eligible `fixed_compensations`, `hourly_compensations`, and `paid_time_off`.
+
+Within the `hourly_compensations` array, there are fields for `Regular Hours`, `Overtime`, and `Double overtime` which include `hours` and `job_uuid` attributes.
+
+You would use the `job_uuid` within each Hours type to identify which job you are populating hours for. **This is essential in ensuring that a specific employee is being attributed the correct amount of hours for a given job, resulting in the correct payment calculation and reporting for that employee.**
+
+```json
+      "hourly_compensations": [
+        {
+          "name": "Regular Hours",
+          "hours": "40.000",
+          "job_uuid": 1,
+          "compensation_multiplier": 1
+        },
+        {
+          "name": "Overtime",
+          "hours": "8.000",
+          "job_uuid": 1,
+          "compensation_multiplier": 1.5
+        },
+        {
+          "name": "Double Overtime",
+          "hours": "0.000",
+          "job_uuid": 1,
+          "compensation_multiplier": 2
+        },
+        {
+          "name": "Regular Hours",
+          "hours": "0.000",
+          "job_uuid": 2,
+          "compensation_multiplier": 1
+        },
+        {
+          "name": "Overtime",
+          "hours": "0.000",
+          "job_uuid": 2,
+          "compensation_multiplier": 1.5
+        },
+        {
+          "name": "Double Overtime",
+          "hours": "0.000",
+          "job_uuid": 2,
+          "compensation_multiplier": 2
+        }
+      ]
+
+```
+
+### Compensations
+
+Compensations contain information on how much is paid out for a job. The job object can have multiple compensations to account for changes over time, such as merit increases, **but only one compensation is active at a time**. The `rate` field in the job object reflects the current compensation.
+
+```json
+{
+  "id": 7757869441038000,
+  "uuid": "d6d1035e-8a21-4e1d-89d5-fa894f9aff97",
+  "version": "d0e719137f89ca3dd334dd4cc248ffbb",
+  "employee_id": 7757869432666661,
+  "employee_uuid": "948daac8-4355-4ece-9e2a-229898accb22",
+  "current_compensation_id": 7757869444844981,
+  "current_compensation_uuid": "ea8b0b90-1112-4f9d-bb93-bf029bc8537a",
+  "payment_unit": "Hour",
+  "primary": true,
+  "title": "Server",
+  "compensations": [
+    {
+      "id": 7757869444844981,
+      "uuid": "ea8b0b90-1112-4f9d-bb93-bf029bc8537a",
+      "version": "994b75511d1debac5d7e2ddeae13679f",
+      "payment_unit": "Hour",
+      "flsa_status": "Nonexempt",
+      "job_id": 7757869441038000,
+      "job_uuid": "d6d1035e-8a21-4e1d-89d5-fa894f9aff97",
+      "effective_date": "2023-01-20",
+      "rate": "10.00"
+    }
+  ],
+  "rate": "10.00",
+  "hire_date": "2023-01-20",
+  "location_id": 7757727716657803,
+  "location": {
+    "id": 7757727716657803,
+    "street_1": "412 Kiera Stravenue",
+    "street_2": "Suite 391",
+    "city": "San Francisco",
+    "state": "CA",
+    "zip": "94107",
+    "country": "USA",
+    "inactive": false
+  }
+}
+```
+
+## How to Calculate an Employee’s Total Gross Wage
+
+Gross Wages is the total amount of money employees receive before any taxes and pre-tax deductions are taken out. Gross wages apply to both exempt and non-exempt employees and they consist of regular and supplemental wages.
+
+*   **Equation**: Regular Wages + Supplemental Wages = Gross Wages
+
+**Example**:
+
+**Regular Wages:**
+
+*   Employee: `job_id` has a `rate` of `“7.25”` per `"Hour"`
+*   Employee works 35 `Regular Hours`
+*   $7.25 \* 35 `Regular Hours` = $253.75
+
+**Supplemental Wages:**
+
+*   $400 in `Cash Tips` (no calculation needed)
+
+**Gross Wages:**
+
+**$253.75** (Regular wages) + **$400** (Supplemental wages) = **653.75** Total Gross wages
+
+For the purpose of calculating Gross Wage, Supplemental Wages are available via the `fixed_compensations` array in the payroll object. Supplemental Wages or `fixed_compensations` are entered as flat dollar amounts so you simply need to add the total `fixed_compensations` to the Regular Wages to calculate the total Gross Wage.
+
+```json
+ "employee_compensations": [  
+    {  
+      "employee_uuid": "187412e1-3dbe-491a-bb2f-2f40323a7067",  
+      "excluded": false,  
+      "payment_method": "Direct Deposit",  
+      "fixed_compensations": [  
+        {  
+          "name": "Cash Tips",  
+          "amount": "400.00",  
+          "job_uuid": "94e0d15e-9ed2-4077-98f6-64554f242ba5"  
+        },  
+        {  
+          "name": "Reimbursement",  
+          "amount": "000.00",  
+          "job_uuid": "91bc3b43-ded0-4ee7-98fe-215499e909ba"  
+        }  
+      ],  
+      "hourly_compensations": [  
+        {  
+          "name": "Regular Hours",  
+          "hours": "35.000",  
+          "job_uuid": "bd378298-3e0c-4145-904a-baadf8a91fa3",  
+          "compensation_multiplier": 1,  
+          "flsa_status": "Nonexempt"  
+        },  
+        {  
+          "name": "Overtime",  
+          "hours": "0.000",  
+          "job_uuid": "9d3760f0-d1f9-4700-8817-0fe2dce5cf23",  
+          "compensation_multiplier": 1.5,  
+          "flsa_status": "Nonexempt"  
+        },  
+        {  
+          "name": "Double overtime",  
+          "hours": "0.000",  
+          "job_uuid": "b5eef9a9-4a87-4649-a80d-14878c05f44e",  
+          "compensation_multiplier": 2,  
+          "flsa_status": "Nonexempt"  
+        }  
+      ]  
+    }  
+  ]
+
+```
+
