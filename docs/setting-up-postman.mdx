@@ -1,0 +1,89 @@
+---
+title: "Postman Setup Guide"
+description: "Guide to effectively setup Postman with customization and updates"
+---
+Follow this guide to setup Postman in the most effective way possible. This setup will allow the most customization locally while still being able to pull in any of our changes without overwriting any of your local configurations.
+
+[<img className="block" src="images/run_pstmn_io/_button.svg" alt="Run In Postman" />](https://god.gw.postman.com/run-collection/23606692-ebe7e42c-9437-42a0-ac92-2aeba2fa8d91)
+
+We publish one collection for each available version of the API. Select the version you will be building off of, and create a fork while logged into your Postman account.
+
+<img className="block" src="images/files_readme_io/_b96c633_Screenshot_2024_01_04_at_10.12.55_AM.png" alt="" />
+
+Give your fork of the collection a unique label, select the workspace where you want it to live, and make sure to select “Watch original collection” to receive email notifications whenever we release changes to the collection.
+
+<img className="block" src="images/files_readme_io/_69e687f_Screenshot_2024_01_04_at_10.15.57_AM.png" alt="" />
+
+After clicking “Fork Collection” you should see the forked collection in your own workspace.
+
+Set up a local environment where you can store your local environment variables. At this point, make sure you've created an application by following the [Getting Started Guide](https://docs.gusto.com/embedded-payroll/docs/getting-started)
+. Make note of your `apiKey` and `version`.
+
+<img className="block" src="images/files_readme_io/_203e6c7_Screenshot_2024_01_04_at_10.43.40_AM.png" alt="" />
+
+You must add the `version` variable and it should be the version string of the API you’re using (i.e. “2023-12-01, in the above example)
+
+<img className="block" src="images/files_readme_io/_1c990f0_Screenshot_2024_06_17_at_3.31.55_PM.png" alt="" />
+
+### Using the API via Postman
+
+In order to start using the API, you must first [generate and store a system token](https://docs.gusto.com/embedded-payroll/edit/system-access-tokens)
+. Then you can generate a strict access token by making a request to the `POST /partner_managed_companies` endpoint.
+
+<img className="block" src="images/files_readme_io/_b4f7ec2_Screenshot_2024_01_04_at_11.13.49_AM.png" alt="" />
+
+We like to use [Postman’s predefined variables](https://learning.postman.com/docs/writing-scripts/script-references/variables-list/)
+ to randomly generate new values for each request.
+
+```json
+{
+  "user": {
+    "first_name": "{{$randomFirstName}}",
+    "last_name": "{{$randomLastName}}",
+    "email": "{{$randomExampleEmail}}"
+  },
+  "company": {
+    "name": "From PartnerManaged API {{$randomCompanyName}}",
+    "trade_name": ""
+  }
+}
+```
+
+After making the POST request, you should receive an API access token, which must be saved as a bearerToken in your environment variables (it is also useful to save the returned company uuid).
+
+<img className="block" src="images/files_readme_io/_080f2b2_Screenshot_2024_01_04_at_12.54.37_PM.png" alt="" />
+
+At this point you should be able to make a request to any other endpoint in the postman collection using the `bearerToken` to authenticate.
+
+### Some Postman tips
+
+These are some scripts and other tricks that we use internally which make working with Postman even easier.
+
+#### Setting the version header for each request
+
+By default the version header is set to a placeholder value `<version>` in our collection, which is meaningless to Postman. A simple way to fill in this header value before each request is by creating the following pre-request script at the _collection_ level.
+
+```javascript
+version = pm.variables.get("version");
+pm.request.headers.clear("X-Gusto-API-Version");
+pm.request.headers.add({key: 'X-Gusto-API-Version', value: version });
+
+```
+
+#### Automatically saving access tokens (and other variables)
+
+We use a [Postman Test](https://learning.postman.com/docs/writing-scripts/intro-to-scripts/#scripts-in-postman)
+, which is a script that runs after a response has been received, to automatically save the `access_token` and `company_uuid` to our environment. That way we can immediately make subsequent requests.
+
+```javascript
+pm.test("Success", () => {
+    pm.response.to.have.status(200);
+
+    const responseJson = pm.response.json();
+    pm.environment.set("bearerToken", responseJson.access_token);
+    pm.environment.set("refresh_token", responseJson.refresh_token);
+    pm.environment.set("company_uuid", responseJson.company_uuid);
+});
+
+```
+
