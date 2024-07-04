@@ -1,0 +1,219 @@
+---
+title: "Create a Time Off Policy"
+description: "Learn how to create and manage time-off policies in Gusto Embedded."
+---
+To support our partners with and without time-tracking solutions, Gusto Embedded offers the ability to create and manage [time-off policies](https://support.gusto.com/article/999756591000000/Manage-time-off-policies)
+.
+
+> ## 📘
+> 
+> At this time, we only support `vacation` or `sick` policy types.
+
+## 1\. Create a Time Off Policy
+
+To create a time off policy use the `POST companies/{company_uuid}/time_off_policies` [endpoint](/embedded-payroll/reference/post-companies-company_uuid-time_off_policies)
+.
+
+```curl
+curl --request POST \
+     --url https://api.gusto-demo.com/v1/companies/{company_uuid}/time_off_policies \
+     --header 'accept: application/json' \
+     --header 'authorization: Bearer COMPANY_API_TOKEN' \
+     --header 'content-type: application/json' \
+     --data '
+{
+     "name": "Intermission Policy",
+     "policy_type": "vacation",
+     "accrual_method": "per_hour_paid",
+     "accrual_rate": "4.0",
+     "accrual_rate_unit": "80.0",
+     "paid_out_on_termination": true,
+     "accrual_waiting_period_days": 30,
+     "carryover_limit_hours": "200.0",
+     "max_accrual_hours_per_year": "120.0",
+     "max_hours": "240.0"
+}
+'
+
+``````curl
+const fetch = require('node-fetch');
+
+const url = 'https://api.gusto-demo.com/v1/companies/{company_uuid}/time_off_policies';
+const options = {
+  method: 'POST',
+  headers: {
+    accept: 'application/json',
+    'content-type': 'application/json',
+    authorization: 'Bearer COMPANY_API_TOKEN'
+  },
+  body: JSON.stringify({
+    name: 'Intermission Policy',
+    policy_type: 'vacation',
+    accrual_method: 'per_hour_paid',
+    accrual_rate: '4.0',
+    accrual_rate_unit: '80.0',
+    paid_out_on_termination: true,
+    accrual_waiting_period_days: 30,
+    carryover_limit_hours: '200.0',
+    max_accrual_hours_per_year: '120.0',
+    max_hours: '240.0'
+  })
+};
+
+fetch(url, options)
+  .then(res => res.json())
+  .then(json => console.log(json))
+  .catch(err => console.error('error:' + err));
+
+```
+
+> ## 📘
+> 
+> If creating a time off policy where `accrual_method` is `per_anniversary_year`, `per_calendar_year`, or `unlimited`, then `accrual_waiting_period_days` should be `0`.
+> 
+> If creating a time off policy where `accrual_method` is `unlimited`, then `carryover_limit_hours`, `max_accrual_hours_per_year`, and `max_hours` must be blank.
+
+## 2\. Add Employees to Policy
+
+Once the policies are created, you can add employees to or remove employees from a policy by using the `PUT time_off_policies/{time_off_policy_uuid}/add_employees` [endpoint](/embedded-payroll/reference/put-version-time_off_policies-time_off_policy_uuid-add_employees)
+.
+
+```curl
+curl --request PUT \
+     --url https://api.gusto-demo.com/v1/time_off_policies/{time_off_policy_uuid}/add_employees \
+     --header 'accept: application/json' \
+     --header 'authorization: Bearer COMPANY_API_TOKEN' \
+     --header 'content-type: application/json' \
+     --data '
+{
+     "employee": [\
+          {\
+               "uuid": "56c672b4-3918-45cd-a3bb-a62ae0ff1307",\
+               "balance": "40.0"\
+          },\
+          {\
+               "uuid": "28e7a45d-32dd-4925-a82a-9a3ccc6d302c",\
+               "balance": "40.0"\
+          },\
+          {\
+               "uuid": "f60650da-ba18-417a-b2ab-3c9b6f0fe4f2",\
+               "balance": "20.0"\
+          }\
+     ]
+}
+'
+
+``````curl
+const fetch = require('node-fetch');
+
+const url = 'https://api.gusto-demo.com/v1/time_off_policies/{time_off_policy_uuid}/add_employees';
+const options = {
+  method: 'PUT',
+  headers: {
+    accept: 'application/json',
+    'content-type': 'application/json',
+    authorization: 'Bearer COMPANY_API_TOKEN'
+  },
+  body: JSON.stringify({
+    employee: [\
+      {uuid: '56c672b4-3918-45cd-a3bb-a62ae0ff1307', balance: '40.0'},\
+      {uuid: '28e7a45d-32dd-4925-a82a-9a3ccc6d302c', balance: '40.0'},\
+      {uuid: 'f60650da-ba18-417a-b2ab-3c9b6f0fe4f2', balance: '20.0'}\
+    ]
+  })
+};
+
+fetch(url, options)
+  .then(res => res.json())
+  .then(json => console.log(json))
+  .catch(err => console.error('error:' + err));
+
+```
+
+> ## 📘
+> 
+> You can always remove an Employee from a time off policy using the `PUT time_off_policies/{time_off_policy_uuid}/remove_employees` [endpoint](/embedded-payroll/reference/put-v1-time_off_policies-time_off_policy_uuid-remove_employees)
+> .
+
+## 3\. Update a Payroll With Paid Time Off
+
+To [update a payroll](/embedded-payroll/reference/put-v1-companies-company_id-payrolls)
+ with PTO hours taken during a pay period, `policy_uuid` and/or `name` can be passed on to the `paid_time_off` array object.
+
+```curl
+curl --request PUT \
+     --url https://api.gusto-demo.com/v1/companies/{company_id}/payrolls/{payroll_id} \
+     --header 'accept: application/json' \
+     --header 'authorization: Bearer COMPANY_API_TOKEN' \
+     --header 'content-type: application/json' \
+     --data '
+{
+     "employee_compensations": [\
+          {\
+               "hourly_compensations": [\
+                    {\
+                         "name": "Overtime",\
+                         "hours": "10.000",\
+                         "job_id": 2,\
+                         "job_uuid": "9d3760f0-d1f9-4700-8817-0fe2dce5cf23"\
+                    }\
+               ],\
+               "paid_time_off": [\
+                    {\
+                         "name": "Intermission Hours",\
+                         "hours": "8.000",\
+                         "policy_uuid": "1bad01e2-140c-49ed-9542-2388ce4a19b3"\
+                    }\
+               ],\
+               "employee_id": 1123581321345589,\
+               "employee_uuid": "187412e1-3dbe-491a-bb2f-2f40323a7067"\
+          }\
+     ],
+     "version": "19289df18e6e20f797de4a585ea5a91535c7ddf7"
+}
+'
+
+``````curl
+const fetch = require('node-fetch');
+
+const url = 'https://api.gusto-demo.com/v1/companies/{company_uuid}/payrolls/{pay_period_start_date}/{pay_period_end_date}';
+const options = {
+  method: 'PUT',
+  headers: {
+    accept: 'application/json',
+    'content-type': 'application/json',
+    authorization: 'Bearer COMPANY_API_TOKEN'
+  },
+  body: JSON.stringify({
+    employee_compensations: [\
+      {\
+        hourly_compensations: [\
+          {\
+            name: 'Overtime',\
+            hours: '10.000',\
+            job_id: 2,\
+            job_uuid: '9d3760f0-d1f9-4700-8817-0fe2dce5cf23'\
+          }\
+        ],\
+        paid_time_off: [\
+          {\
+            name: 'Intermission Hours',\
+            hours: '8.000',\
+            policy_uuid: '1bad01e2-140c-49ed-9542-2388ce4a19b3'\
+          }\
+        ],\
+        employee_id: 1123581321345589,\
+        employee_uuid: '187412e1-3dbe-491a-bb2f-2f40323a7067'\
+      }\
+    ],
+    version: '19289df18e6e20f797de4a585ea5a91535c7ddf7'
+  })
+};
+
+fetch(url, options)
+  .then(res => res.json())
+  .then(json => console.log(json))
+  .catch(err => console.error('error:' + err));
+
+```
+
