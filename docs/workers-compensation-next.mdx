@@ -1,0 +1,69 @@
+---
+title: "Workers' Compensation"
+description: "Covers expenses for employee medical care and lost wages due to workplace injuries."
+---
+## What is Workers' Compensation?
+
+Workers’ compensation can help cover expenses for employee medical care, lost wages and other expenses due to a workplace injury. It can help employees if they are injured on the job and protects employers from significant financial losses after a workplace injury occurs.
+
+Workers’ Compensation is commonly offered by payroll providers who support employers within construction, cleaning, and retail industries. Likewise, most states require employees to have a form of workers’ compensation.
+
+## Offering Workers' Compensation
+
+Workers’ compensation through NEXT is available through the Workers’ Compensation Flow (company\_workers\_compensation).
+
+> ## 📘Adding NEXT's Offering
+> 
+> Being able to offer workers’ compensation to customers requires an additional agreement with NEXT. If interested, please reach out to your Partner Success Manager.
+
+## 1\. Launch Workers' Compensation Flow
+
+```curl
+curl --request POST \
+     --url https://api.gusto-demo.com/v1/companies/company_uuid/flows \
+     --header 'accept: application/json' \
+     --header 'content-type: application/json'
+     --data '
+{
+  "flow_type": "company_workers_compensation"
+}
+
+```
+
+Launching the Workers’ Compensation Flow will display the following:
+
+<img className="block" src="images/files_readme_io/_8f7a6cf_image.png" alt="" />
+
+Choosing to “Get an instant quote” will cause the admin to enter the NEXT Connect flow.
+
+## 2\. Grant Access
+
+NEXT needs access to both employer and employee payroll information in order to offer workers’ compensation. Clicking “Connect” will provide access to the following payroll information:
+
+<img className="block" src="images/files_readme_io/_c157239_image.png" alt="" />
+
+## 3\. Enter Company Information
+
+The next screen will pull up the insurance application process. Admins will need to enter additional information here in order to receive a policy quote.
+
+<img className="block" src="images/files_readme_io/_b52342d_image.png" alt="" />
+
+## 4\. Get a Quote
+
+After entering all of the required information, NEXT will generate multiple quotes for coverage to be reviewed:
+
+<img className="block" src="images/files_readme_io/_3f2e128_image.png" alt="" />
+
+<img className="block" src="images/files_readme_io/_3f1789d_image.png" alt="" />
+
+## 5\. Enter Payment Information
+
+Once Employers accept their quote, they will be prompted to enter their payment information.  
+**Note:** Payment will not be collected until they run payroll.
+
+<img className="block" src="images/files_readme_io/_7710901_image.png" alt="" />
+
+## 6\. Submit Claims
+
+Once the policy is purchased, the Payroll Admin will have access to their NEXT account. Within their NEXT account, they can download a certificate of insurance, manage their payroll + employees, and submit claims.
+
