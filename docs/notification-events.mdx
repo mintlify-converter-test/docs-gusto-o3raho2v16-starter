@@ -1,0 +1,48 @@
+---
+title: "Title goes here"
+description: "Description goes here"
+---
+`Notification` webhook events signify that a critical communication must be relayed to an end user. Other webhook event types indicate that an entity has been created, updated, or deleted, and enables you to perform subsequent processing logic in your application.
+
+When subscribed to `Notification` webhooks you will receive the following events:
+
+| event\_type | description |
+| --- | --- |
+| notification._{category}_.created | A partner notification has been created |
+| notification._{category}_.resolved | A partner notification has been resolved |
+
+> ## 📘category describes the notification type
+> 
+> In order to retrieve more details about a notification, such as suggested copy for a notification message, please use [GET v1/notifications/:notification\_uuid.](get-notifications-notification_uuid)
+> 
+> For a list of currently available notification categories, see this [page](deprecated-gustocom-emails)
+> .
+
+### Example payloads
+
+```json
+{
+  "event_type": "notification.information_request.created",
+  "resource_type": "Company",
+  "resource_id": 1,
+  "resource_uuid": "f6a168b4-487d-4688-8812-911c86803b57",
+  "entity_type": "Notification",
+  "entity_id": 2,
+  "entity_uuid": "86e785b3-37a1-40ed-94e4-3cedd3f2fc90",
+  "timestamp": 1688587457
+}
+```
+
+```json
+{
+  "event_type": "notification.invalid_ssn.created",
+  "resource_type": "Company",
+  "resource_id": 1,
+  "resource_uuid": "f6a168b4-487d-4688-8812-911c86803b57",
+  "entity_type": "Notification",
+  "entity_id": 2,
+  "entity_uuid": "86e785b3-37a1-40ed-94e4-3cedd3f2fc90",
+  "timestamp": 1688587457
+}
+```
+
