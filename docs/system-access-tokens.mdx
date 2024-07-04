@@ -1,0 +1,41 @@
+---
+title: "System Access Token Update"
+description: "Changes to API token system starting 2024-04-01"
+---
+Starting from version **2024-04-01**, the partner API token is deprecated in favor of system access tokens. In addition to making system access more secure, this improvement lets you manage multiple applications per organization and properly perform system-level operations such as creating partner managed companies, subscribing to webhook.
+
+To obtain a system access token, please make a request to the `/oauth/token` endpoint using `system_access` for the grant\_type.
+
+```curl
+curl --location --request POST 'https://api.gusto-demo.com/oauth/token'  
+--header 'Content-Type: application/json'  
+--data-raw '{  
+  "client_id": "{{client_id}}",  
+  "client_secret": "{{client_secret}}",  
+  "grant_type": "system_access"  
+}'
+
+```
+
+  
+
+The resulting token has a 2 hour expiration. Unlike company access tokens, you may request and use additional system access tokens while other system access tokens are still active. Hence it is not necessary to store the access token in the database if you prefer to request for a token just in time before a system request.
+
+```json
+{
+  "access_token": "PF9RH-QVnURJAY9-CHX0CC71HOPq7rClhJTdLdZOLt0",
+  "expires_in": 7200,
+  "token_type": "Bearer"
+}
+```
+
+  
+
+The system access token can subsequently be used as a bearer token
+
+```
+Content-Type: application/json  
+Authorization: Bearer PF9RH-QVnURJAY9-CHX0CC71HOPq7rClhJTdLdZOLt0
+
+```
+
