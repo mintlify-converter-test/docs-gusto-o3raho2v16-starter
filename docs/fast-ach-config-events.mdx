@@ -1,0 +1,26 @@
+---
+title: "FastAchConfig Webhooks"
+description: "Information about FastAchConfig webhook events"
+---
+When subscribed to the `FastAchConfig` webhooks you will receive the following events:
+
+| event\_type | description |
+| --- | --- |
+| fast\_ach\_config.deactivated | Fast ach config has been deactivated |
+| fast\_ach\_config.activated | Fast ach config has been activated |
+
+### Example payload
+
+```json
+{
+  "event_type": "fast_ach_config.activated",
+  "resource_type": "Company",
+  "resource_id": 5,
+  "resource_uuid": "579db61b-b024-4e6a-92f3-dd09cbf7c653",
+  "entity_type": "FastAchConfig",
+  "entity_id": 2,
+  "entity_uuid": "1c3a83c9-92db-4565-8c2c-92d4af6b1cb3",
+  "timestamp": 1681851815
+}
+```
+
