@@ -1,0 +1,42 @@
+---
+title: "Sunsetting Direct Emails"
+description: "Transition to partner notifications infrastructure, phasing out direct emails in Q1 2024."
+---
+Currently, our system sends emails from Gusto.com to your customers to inform them of critical communications for compliance reasons. We plan to sunset direct email communications and transition partners to leverage our new [partner notifications infrastructure](partner-notifications)
+.
+
+> ## 🚧In Q1 2024, we will be deprecating all critical Gusto.com emails after launching all remaining Notification categories.
+> 
+> The table below indicates which emails have been replaced with our new notification system. This is not a comprehensive list of all Gusto.com emails that are currently being sent to end users.
+> 
+> This migration is on-going; we will continue to update this page as new categories are rolled out.
+
+| Gusto.com email | Notification category |
+| --- | --- |
+| Information requests | information\_request |
+| Employee invalid SSN | invalid\_ssn |
+| Bank error: failure to debit company bank account | bank\_error.company\_ach\_debit\_failure |
+| Bank error: failure to credit beneficiary of a company | bank\_error.compensation\_credit\_failure |
+| Bank error: failure to credit contractor | bank\_error.contractor\_ach\_credit\_failure |
+| Bank error: failure to debit contractor | bank\_error.contractor\_ach\_debit\_failure |
+| Bank error: failure to credit employee | bank\_error.employee\_ach\_credit\_failure |
+| Bank error: failure to debit employee | bank\_error.employee\_ach\_debit\_failure |
+| Bank error: failure to debit payroll on faster ACH | bank\_error.fast\_payroll\_ach\_debit\_r01\_first\_failure |
+| Bank error: failure to debit contractor payment on faster ACH | bank\_error.fast\_contractor\_payment\_ach\_debit\_r01\_first\_failure |
+| Recovery case: `R01` (Insufficient funds) bank error | recovery\_case.insufficient\_funds |
+| Recovery case: `R02` (Account closed) bank error | recovery\_case.connect\_new\_bank |
+| Recovery case: `R16` (Account frozen) bank error | recovery\_case.unfreeze\_bank\_account |
+| Recovery case: all other bank errors | recovery\_case.verify\_bank\_account |
+| Invalid signatory | invalid\_signatory |
+| Soft suspension | soft\_suspended |
+| Auto Payroll Disabled | auto\_payroll.disabled |
+| Auto Payroll Excluded Employees | auto\_payroll.excluded\_employees |
+| Auto Payroll Failed | auto\_payroll.failed |
+| Reconciliation Payroll Created | reconciliation\_payroll\_created |
+| Company Rejected | company\_rejected.rejected |
+| Company Rejected - Bank Errors | company\_rejected.bank\_errors |
+| Company Rejected - Likely Fraud | company\_rejected.likely\_fraud |
+| Company Rejected - Suspicious Bank | company\_rejected.suspicious\_bank |
+
+_Last updated: Tuesday, February 6, 2024_
+
