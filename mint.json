@@ -1,91 +1,222 @@
 {
   "$schema": "https://mintlify.com/schema.json",
-  "name": "Starter Kit",
+  "name": "docs-gusto",
   "logo": {
-    "dark": "/logo/dark.svg",
-    "light": "/logo/light.svg"
+    "dark": "/logo/regular.svg",
+    "light": "/logo/inverted.svg"
   },
   "favicon": "/favicon.svg",
   "colors": {
-    "primary": "#0D9373",
-    "light": "#07C983",
-    "dark": "#0D9373",
+    "primary": "#323232",
+    "light": "#252525",
+    "dark": "#323232",
     "anchors": {
-      "from": "#0D9373",
-      "to": "#07C983"
+      "from": "#323232",
+      "to": "#252525"
     }
   },
   "topbarLinks": [
     {
-      "name": "Support",
-      "url": "mailto:hi@mintlify.com"
+      "name": "Create account",
+      "url": "https://gusto.com/invite/company"
     }
   ],
   "topbarCtaButton": {
-    "name": "Dashboard",
-    "url": "https://dashboard.mintlify.com"
+    "name": "How Gusto works",
+    "url": "https://gusto.com/invite/company/explore"
+  },
+  "primaryTab": {
+    "name": "Guides"
   },
   "tabs": [
     {
       "name": "API Reference",
-      "url": "api-reference"
-    }
-  ],
-  "anchors": [
-    {
-      "name": "Documentation",
-      "icon": "book-open-cover",
-      "url": "https://mintlify.com/docs"
+      "url": "/embedded-payroll/reference"
     },
     {
-      "name": "Community",
-      "icon": "slack",
-      "url": "https://mintlify.com/community"
+      "name": "Changelog",
+      "url": "/embedded-payroll/changelog"
     },
     {
-      "name": "Blog",
-      "icon": "newspaper",
-      "url": "https://mintlify.com/blog"
+      "name": "API Policy",
+      "url": "/embedded-payroll/page/api-policy"
+    },
+    {
+      "name": "API Status",
+      "url": "/embedded-payroll/page/api-status"
+    },
+    {
+      "name": "Gusto Security",
+      "url": "https://gusto.com/security"
     }
   ],
+  "anchors": [],
+  "modeToggle": {
+    "default": "light"
+  },
   "navigation": [
     {
-      "group": "Get Started",
+      "group": "Reports",
       "pages": [
-        "introduction",
-        "quickstart",
-        "development"
+        "docs/generate-custom-reports"
       ]
     },
     {
-      "group": "Essentials",
+      "group": "Contact",
       "pages": [
-        "essentials/markdown",
-        "essentials/code",
-        "essentials/images",
-        "essentials/settings",
-        "essentials/navigation",
-        "essentials/reusable-snippets"
+        "docs/submit-feedback",
+        "docs/contact-gusto"
       ]
     },
     {
-      "group": "API Documentation",
+      "group": "Time Off",
       "pages": [
-        "api-reference/introduction"
+        "docs/create-a-time-off-policy",
+        "docs/create-a-holiday-pay-policy"
       ]
     },
     {
-      "group": "Endpoint Examples",
+      "group": "ACH TRANSACTIONS",
       "pages": [
-        "api-reference/endpoint/get",
-        "api-reference/endpoint/create",
-        "api-reference/endpoint/delete"
+        "docs/ach-transactions",
+        "docs/ach-codes-and-transaction-types",
+        "docs/bank-errors"
+      ]
+    },
+    {
+      "group": "Product Partnerships",
+      "pages": [
+        "docs/health-insurance-simplyinsured",
+        "docs/on-demand-pay-clair",
+        "docs/workers-compensation-next"
+      ]
+    },
+    {
+      "group": "Companies",
+      "pages": [
+        "docs/companies-intro",
+        "docs/onboard-a-company",
+        "docs/migrate-existing-company",
+        "docs/create-company-benefits",
+        "docs/company-form",
+        "docs/create-a-department",
+        "docs/calculate-an-invoice"
+      ]
+    },
+    {
+      "group": "Gusto Flows (Pre-built UI)",
+      "pages": [
+        "docs/flows-intro",
+        "docs/flow-requirements",
+        "docs/flows-getting-started",
+        "docs/customize-flows",
+        "docs/custom-font-for-flows",
+        "docs/flow-types",
+        "docs/try-it-now"
+      ]
+    },
+    {
+      "group": "Contractors",
+      "pages": [
+        "docs/contractors-intro",
+        "docs/onboard-a-contractor",
+        "docs/contractor-onboarding-method-comparison",
+        "docs/contractor-forms-guide",
+        "docs/terminate-a-contractor",
+        "docs/process-contractor-payments",
+        "docs/contractor-payment-receipts"
+      ]
+    },
+    {
+      "group": "W2 Employees",
+      "pages": [
+        "docs/w2-employee-intro",
+        "docs/onboard-a-w2-employee",
+        "docs/onboarding-method-comparison",
+        "docs/create-a-job-and-compensation",
+        "docs/w2-employee-forms",
+        "docs/terminate-a-w2-employee",
+        "docs/rehire-a-w2-employee",
+        "docs/manage-employee-addresses-effective-dating"
+      ]
+    },
+    {
+      "group": "Payrolls",
+      "pages": [
+        "docs/payroll-intro",
+        "docs/2-day-vs-4-day",
+        "docs/recovery-cases-1",
+        "docs/calculate-an-employees-gross-wage",
+        "docs/complete-a-regular-payroll",
+        "docs/payroll-statuses",
+        "docs/payroll-receipts",
+        "docs/payroll-blockers",
+        "docs/create-an-off-cycle-payroll",
+        "docs/create-a-termination-payroll-flow",
+        "docs/create-company-specific-custom-earnings",
+        "docs/create-a-historical-payroll",
+        "docs/pay-schedule-info",
+        "docs/create-a-pay-schedule",
+        "docs/manage-pay-schedules-api",
+        "docs/manage-pay-schedules-flow",
+        "docs/generate-printable-paper-checks",
+        "docs/gross-up"
+      ]
+    },
+    {
+      "group": "Basics",
+      "pages": [
+        "docs/introduction",
+        "docs/getting-started",
+        "docs/setting-up-postman",
+        "docs/updating-postman-collections",
+        "docs/payroll-fundamentals",
+        "docs/api-versioning",
+        "docs/getting-setup",
+        "docs/version-upgrade-guide",
+        "docs/authentication",
+        "docs/system-access-tokens",
+        "docs/company-access-tokens",
+        "docs/strict-access",
+        "docs/oauth2",
+        "docs/errors",
+        "docs/error-categories",
+        "docs/idempotency",
+        "docs/pagination",
+        "docs/rate-limits",
+        "docs/scopes",
+        "docs/webhooks",
+        "docs/webhook-events",
+        "docs/bank-account-events",
+        "docs/company-events",
+        "docs/company-benefit-events",
+        "docs/contractor-events",
+        "docs/contractor-payment-events",
+        "docs/employee-events",
+        "docs/home-address-events",
+        "docs/work-address-events",
+        "docs/employee-benefit-events",
+        "docs/employee-job-compensation-events",
+        "docs/external-payroll-events",
+        "docs/form-events",
+        "docs/generated-document-events",
+        "docs/location-events",
+        "docs/payroll-events",
+        "docs/pay-schedule-events",
+        "docs/signatory-events",
+        "docs/fast-ach-config-events",
+        "docs/notification-events",
+        "docs/partner-notifications",
+        "docs/deprecated-gustocom-emails",
+        "docs/partner-notification-types",
+        "docs/testing-partner-notifications"
       ]
     }
   ],
   "footerSocials": {
-    "x": "https://x.com/mintlify",
-    "github": "https://github.com/mintlify",
-    "linkedin": "https://www.linkedin.com/company/mintsearch"
+    "facebook": "https://www.facebook.com/GustoHQ",
+    "twitter": "https://twitter.com/gustohq",
+    "linkedin": "https://www.linkedin.com/company/gustohq/posts/",
+    "instagram": "https://www.instagram.com/gustohq/"
   }
 }
