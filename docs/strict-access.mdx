@@ -1,0 +1,99 @@
+---
+title: "Version 2023-05-01 Update"
+description: "Strict access token required for authentication"
+---
+Starting from version **2023-05-01** all endpoints that authenticate with an access token require a **strict access token**. A strict access token is reserved for access to only a single company. Requests using tokens that do not meet this requirement shall be responded with a forbidden (403) status. This is the first step in improving our OAuth token management, its security and usability.
+
+## Upgrading to version 2023-05-01
+
+The following is a step-by-step guide to help you upgrade to version 2023-05-01. Please note these steps must be carried out in the order listed below. If your application is already assigned 2023-05-01 as the minimum API version, you DO NOT need to go through this process.
+
+1.  **Ensure your data models support a single company per OAuth grant**. An OAuth grant includes an access token and refresh token pair. We recommend you securely store these tokens along with the company UUID associated with the grant. When a token is successfully refreshed, the new pair can be used to replace the previous one.
+2.  **Adopt single-company selection for in-app authorization code**. If your integration relies on the authorization code flow, please contact our Technical Solutions team when you’re ready to utilize strict access. Once the feature is enabled, users shall be able to select a single company for every authorization code instance. No change is required for your existing OAuth code to token exchange. The resulting access and refresh tokens shall be strict access-compliant.
+3.  **Upgrade ONLY POST v1/partner\_managed\_companies requests to 2023-05-01 version**. This ensures that all new OAuth grants created as part of new company creation meet strict access requirements. Please DO NOT apply the 2023-05-01 version to requests to other endpoints as your existing tokens may not meet strict access requirements.
+4.  **Exchange legacy tokens for strict access tokens**. Use the **/oauth/token** endpoint with `strict_access` grant type to exchange a legacy token for strict access tokens. Please refer to the **[Strict access token grant type](#strict-access-token-grant-type)
+    ** section for more information on this operation. You may store and use these strict access tokens in your current API version. Please note once a strict access token is used, the associated company access in the legacy grants shall be revoked.
+
+> ## 📘Verifying strict access tokens
+> 
+> Even if you’ve been using a single company per token, you should leverage this endpoint to confirm strict access compliance for legacy OAuth grants. A legacy OAuth grant may still have other companies associated with it. When a token meets strict access requirements, the strict access endpoint shall return the same token.
+
+Once all tokens in your system are strict access-compliant, you can safely upgrade all API requests to version 2023-05-01.
+
+## Strict access token grant type
+
+To assist the 2023-05-01 version upgrade we introduce a new `strict_access` grant type to the **/oauth/token** endpoint. This operation takes a legacy access token and returns strict access tokens for associated companies. You must provide an unrevoked and unexpired access token in order to exchange for strict access tokens. You may make multiple requests for the same access token.
+
+```curl
+curl --location --request POST 'https://api.gusto-demo.com/oauth/token' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+  "client_id": "{{client_id}}",
+  "client_secret": "{{client_secret}}",
+  "access_token": "{{access_token}}",
+  "grant_type": "strict_access"
+}'
+
+``````curl
+import fetch from 'node-fetch';
+
+const url = 'https://api.gusto-demo.com/oauth/token`;
+const options = {
+  method: 'POST',
+  headers: {
+    accept:'application/json', 
+    'content-type': 'application/json',
+  body: JSON.stringify({
+    'client_id': '{{client_id}}',
+    'client_secret': '{{client_secret}}',
+    'access_token': '{{access_token}}',
+    'grant_type': 'strict_access'
+    })
+};
+
+fetch(url, options)
+  .then(res => res.json())
+  .then(json => console.log(json))
+  .catch(err => console.error('error:' + err));
+
+
+
+```
+
+> ## 🚧Generated access\_token may be expired
+> 
+> The resulting strict access tokens may already be expired if the strict access was granted previously. You should use the associated refresh token to subsequently obtain a fresh access token.
+
+If a valid token is provided, the response shall have a 200 status and include an array of strict access tokens, one per associated company.
+
+```json
+[
+  {
+    "access_token": "PF9RH-QVnURJAY9-CHX0CC71HOPq7rClhJTdLdZOLt0",
+    "refresh_token": "kzYSEQEusJgTH7n5EZOi1LmimeqS8AtN8i-KBUGIHJo",
+    "resource_uuid": "d525dd21-ba6e-482c-be15-c2c7237f1364",
+    "resource_type": "Company",
+    "token_type": "Bearer",
+    "created_at": 1717950624,
+    "expires_in": 7200
+  },
+  {
+    "access_token": "f627f8b3-a980-4c69-b7d5-7c8727aea3f0",
+    "refresh_token": "ER_r6S2CNSc2GHDtw6TsItecldO9XtynINmCPe7rahA",
+    "resource_uuid": "31db35cd-84c3-4f6a-b56a-ff05d71ef82e",
+    "resource_type": "Company",
+    "token_type": "Bearer",
+    "created_at": 1717605058,
+    "expires_in": 7200
+  }
+]
+```
+
+> ## 📘Can I use a strict access token?
+> 
+> Yes, if the provided access token is already a strict access, then the response shall include the same token. You may use this approach to verify if a token is strict access-compliant or not.
+
+> ## 🚧Access revocation on use
+> 
+> Once a strict access token is used in any API request, the company access in ALL legacy grants shall be revoked. This means legacy access tokens can no longer access the company associated with the strict token.
+
