@@ -1,0 +1,240 @@
+---
+title: "Holiday Pay Policies"
+description: "Creating and managing holiday pay policies in Gusto Embedded"
+---
+In addition to [Vacation and Sick time off policies](https://docs.gusto.com/embedded-payroll/reference/post-companies-company_uuid-time_off_policies)
+, Gusto Embedded offers the ability to create and manage [holiday pay policies](https://support.gusto.com/article/999756591000000/Manage-time-off-policies)
+.
+
+## What are Holiday Pay Policies?
+
+When using holiday pay policies there are two use cases:
+
+1.  Passing holiday hours tracked through the Partner application into the Gusto payroll system.
+2.  Gusto defines holidays and automatically pushes hours for those holidays into the applicable payrolls
+
+For use case one you simply need to create the holiday policy and set all holidays to not be paid (see below for the “how to”). Then when it is time to process payroll sync over any holiday hours to the `Holiday Hours` payroll item under the `"paid_time_off"` array.
+
+For use case two we have the following holidays available via the Gusto API and you will set specific holidays to be **paid out automatically** to employees (see below for the “how to”).
+
+## Gusto API Supported Holidays
+
+1.  New Year’s Day
+2.  Martin Luther King, Jr. Day
+3.  Presidents’ Day
+4.  Memorial Day
+5.  Juneteenth
+6.  Independence Day
+7.  Labor Day
+8.  Columbus Day
+9.  Veterans Day
+10.  Thanksgiving
+11.  Christmas Day
+
+Once the days are configured the holiday pay hours will automatically be included in the payroll item.
+
+> ## 📘
+> 
+> A company is allowed one policy at a time. If a holiday policy is deleted it must be created again. To edit which holidays are designated as paid to the enrolled employees, the existing policy should be updated via the API.
+
+## 1\. Defining the Holiday Pay Policy Response Body
+
+All holiday pay policy endpoints (besides delete and preview) will return the same response body when correctly used. This response will contain:
+
+*   **version** - the policy’s current version identifier
+*   **company\_uuid** - the uuid of the company to which the policy belongs
+*   **federal\_holidays** - describes the policy for the eleven supported holidays, with each holiday containing the following:
+    *   **holiday\_key** - e.g. “new\_years\_day” or “thanksgiving”  
+        selected - true (the holiday is paid) or false (the holiday is not paid)
+    *   **name** - the official name of the holiday (e.g. “New Year’s Day” or “Thanksgiving”)
+    *   **date** - the date of the holiday (e.g. “January 1” or “Fourth Thursday in November”)
+*   **employees** - an array of the employee uuids of the employees enrolled in the policy
+
+## 2\. Get a Holiday Pay Policy
+
+To fetch a holiday policy use the `GET companies/{company_uuid}/holiday_pay_policy` [endpoint](/embedded-payroll/reference/get-companies-company_uuid-holiday_pay_policy)
+.
+
+The following path params are required:
+
+*   **company\_uuid** - the uuid of the company for which you’d like to fetch a holiday pay policy.
+
+```curl
+curl --request GET \
+     --url https://api.gusto-demo.com/v1/companies/{company_uuid}/holiday_pay_policy \
+     --header 'accept: application/json' \
+     --header 'authorization: Bearer {{access_token}}' \
+     --header 'content-type: application/json' \
+
+```
+
+> ## 📘
+> 
+> If the company does not have a holiday pay policy, the endpoint will return 204 No Content. Otherwise, it will return the response body outlined above.
+
+## 3\. Create a Holiday Pay Policy
+
+To create a holiday policy use the `POST companies/{company_uuid}/holiday_pay_policy` [endpoint](/embedded-payroll/reference/post-companies-company_uuid-holiday_pay_policy)
+.
+
+The following path params are required:
+
+*   **company\_uuid** - the uuid of the company for which you’d like to fetch a holiday pay policy.
+
+```curl
+curl --request POST \
+     --url https://api.gusto-demo.com/v1/companies/{company_uuid}/holiday_pay_policy \
+     --header 'accept: application/json' \
+     --header 'authorization: Bearer {{access_token}}' \
+     --header 'content-type: application/json' \
+     --data '
+{
+	“federal_holidays”: {
+		“new_years_day”: {
+			“selected”: true
+		},
+		“veterans_day”: {
+			“selected:” true
+		}
+}
+'
+
+```
+
+Holiday selections can be optionally passed as body params. If an empty body is passed, they will all default to false. If some are passed, those that are not passed will default to false.
+
+> ## 📘
+> 
+> If the company already has a holiday pay policy, the endpoint will return an error. Otherwise, it will return the response body outlined above.
+
+## 4\. Update a Holiday Pay Policy
+
+To update a holiday policy use the `PUT companies/{company_uuid}/holiday_pay_policy` [endpoint](/embedded-payroll/reference/put-companies-company_uuid-holiday_pay_policy)
+.
+
+The following path params are required:
+
+*   **company\_uuid** - the uuid of the company for which you’d like to fetch a holiday pay policy.
+
+The following body params are required:
+
+*   **version** - the policy’s current version identifier. This can be acquired by fetching the policy.
+
+```curl
+curl --request PUT \
+     --url https://api.gusto-demo.com/v1/companies/{company_uuid}/holiday_pay_policy \
+     --header 'accept: application/json' \
+     --header 'authorization: Bearer {{access_token}}' \
+     --header 'content-type: application/json' \
+     --data '
+{
+	“federal_holidays”: {
+		“new_years_day”: {
+			“selected”: true
+		},
+		“veterans_day”: {
+			“selected:” true
+		}
+}
+'
+
+```
+
+Similar to creating a policy, holiday params can be optionally passed, and will default to false if not passed.
+
+If the company does not have a policy, the endpoint will return an error. Otherwise, the endpoint will return the response body outlined above.
+
+> ## 📘
+> 
+> Note that only holiday selections can be updated using this endpoint, as holiday names and dates are non-configurable.
+
+## 5\. Delete a Holiday Pay Policy
+
+To delete a holiday policy use the `DELETE companies/{company_uuid}/holiday_pay_policy` [endpoint](/embedded-payroll/reference/delete-companies-company_uuid-holiday_pay_policy)
+.
+
+The following path params are required:
+
+*   **company\_uuid** - the uuid of the company for which you’d like to fetch a holiday pay policy.
+
+```curl
+curl --request DELETE \
+     --url https://api.gusto-demo.com/v1/companies/{company_uuid}/holiday_pay_policy \
+     --header 'accept: application/json' \
+     --header 'authorization: Bearer {{access_token}}' \
+     --header 'content-type: application/json' \'
+
+```
+
+> ## 📘
+> 
+> If the company does not have a policy, the endpoint will return an error. Otherwise, it will return 204 No Content.
+
+## 6\. Add employees to a Holiday Pay Policy
+
+To **add** employees to a holiday policy use the `PUT companies/{company_uuid}/holiday_pay_policy/add` [endpoint](/embedded-payroll/reference/put-companies-company_uuid-holiday_pay_policy-add)
+.
+
+To **remove** employees to a holiday policy use the `PUT companies/{company_uuid}/holiday_pay_policy/remove` [endpoint](/embedded-payroll/reference/put-companies-company_uuid-holiday_pay_policy-remove)
+.
+
+The following path params are required:
+
+*   **company\_uuid** - the uuid of the company for which you’d like to fetch a holiday pay policy.
+
+The following body params are required:
+
+*   **version** - the policy’s current version identifier. This can be acquired by fetching the policy.
+*   **employees** - an array of the employees you wish to add to or remove from the policy
+
+```curl
+curl --request PUT \
+     --url https://api.gusto-demo.com/v1/companies/{company_uuid}/holiday_pay_policy/add \
+     --header 'accept: application/json' \
+     --header 'authorization: Bearer {{access_token}}' \
+     --header 'content-type: application/json' \'
+          --data '
+{
+     "employees": [\
+          {\
+               "uuid": "56c672b4-3918-45cd-a3bb-a62ae0ff1307"\
+          },\
+          {\
+               "uuid": "28e7a45d-32dd-4925-a82a-9a3ccc6d302c"\
+          }\
+     ]
+}
+'
+
+```
+
+If the company does not have a policy, the endpoint will return an error. Otherwise, the endpoint will return the response body outlined above.
+
+> ## 📘
+> 
+> Note that adding and removing employees does so to the entire policy, as opposed to individual holidays.
+
+## How to Preview Paid Holidays
+
+To preview paid holidays,
+
+use the `GET companies/{company_uuid}/paid_holidays` [endpoint](/embedded-payroll/reference/get-companies-company_uuid-paid_holidays)
+.
+
+The following path params are required:
+
+*   **company\_uuid** - the uuid of the company for which you’d like to fetch a holiday pay policy.
+
+The following body params are optional:
+
+*   **year**
+
+Holidays are created for the next three years. If a year is passed as a body param, only holidays for that year will be returned. Otherwise, holidays for the next three years will be returned.
+
+The response body will contain the list of holidays with the following information:
+
+*   **holiday\_key** - e.g. “new\_years\_day”
+*   **holiday\_name** - e.g. “New Year’s Day”
+*   **start\_date** - e.g. “2024-01-01”
+*   **end\_date** - e.g. “2024-01-01”
+
