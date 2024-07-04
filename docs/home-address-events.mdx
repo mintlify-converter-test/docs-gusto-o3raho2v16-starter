@@ -1,0 +1,27 @@
+---
+title: "HomeAddress Webhooks"
+description: "List of HomeAddress webhook events and example payload"
+---
+When subscribed to the `HomeAddress` webhooks you will receive the following events:
+
+| event\_type | description |
+| --- | --- |
+| employee.home\_address.created | Employee home address has been created |
+| employee.home\_address.updated | Employee home address has been updated |
+| employee.home\_address.deleted | Employee home address has been deleted |
+
+### Example payload
+
+```json
+{
+  "event_type": "employee.home_address.created",
+  "resource_id": 7756341741171842,
+  "resource_type": "Company",
+  "resource_uuid": "463db27c-4ac5-4403-b7f3-d5fb962b051d",
+  "entity_type": "HomeAddress",
+  "entity_id": 7757491335866020,
+  "entity_uuid": "30b33760-bd09-401b-bb49-fc833483304e",
+  "timestamp": 1673566564
+}
+```
+
