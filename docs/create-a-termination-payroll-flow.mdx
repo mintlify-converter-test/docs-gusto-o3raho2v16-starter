@@ -1,0 +1,117 @@
+---
+title: "Termination Payroll Flow"
+description: "Final step for paying terminated employees outside the regular schedule"
+---
+The Termination Payroll Flow is available for when employers need to pay terminated employees outside of the regular payroll schedule. This Flow is the final step of the [Termination Flow](/embedded-payroll/docs/terminate-a-w2-employee)
+ and is available for developers who want to allow employers to run a termination payroll outside of that Flow.
+
+Employers can also run an off-cycle payroll to manually calculate final amounts. If an employer pays employees outside of their payroll system, they’ll need to make sure it’s recorded for tax purposes.
+
+> ## 📘Termination payroll compliance
+> 
+> We recommend giving employers a list of state requirements around termination payroll compliance, which typically has three main factors:
+> 
+> 1.  The date employees must be paid by (which may vary based on the reason for the termination)
+> 2.  Whether unused vacation hours need to be paid out upon termination
+> 3.  Industry-specific factors of an employer’s policy or contract
+
+## 1\. Create a Termination Payroll Flow
+
+To get started, generate an employee termination payroll flow via API call to our Flows [endpoint](/embedded-payroll/reference/post-v1-company-flows)
+.
+
+```curl
+curl --request POST \
+ 		 --url https://api.gusto-demo.com/v1/companies/{{company_uuid}}/flows \
+		 --header 'Authorization: Bearer {{access_token}}’' \
+		 --header 'Content-Type: application/json' \
+	   --data '
+{
+		 "flow_type": "run_termination_payroll"
+}'
+
+``````curl
+const fetch = require('node-fetch');
+
+const url = 'https://api.gusto-demo.com/v1/companies/{company_uuid}/payrolls';
+const options = {
+  method: 'POST',
+  headers: {
+    accept: 'application/json',
+    'content-type': 'application/json',
+    authorization: 'Bearer COMPANY_API_TOKEN'
+  },
+  body: JSON.stringify({
+    employee_uuids: ['9c315969-3c8e-4eed-b0ae-8004c70bd8dc'],
+    off_cycle: true,
+    off_cycle_reason: 'Bonus',
+    start_date: '2022-06-05',
+    end_date: '2022-06-22',
+    check_date: '2022-06/22'
+  })
+};
+
+fetch(url, options)
+  .then(res => res.json())
+  .then(json => console.log(json))
+  .catch(err => console.error('error:' + err));
+
+```
+
+## 2\. Edit compensation
+
+Some compensation fields are disabled or not applicable, depending on the employee’s compensation type (for example “Salary/No overtime” employees will not have editable Overtime or Double overtime). Gusto pre-populates hours for the prorated period for salaried employees, and we ask the payroll admin to input hours for hourly employee. Note that severance is available to edit as a one-time payment.
+
+If it’s the final payroll for a terminated employee, the amounts entered for earning hours (regular hours, overtime, double overtime) and time off (vacation, sick) will affect accrued hours in the next modal.
+
+## 3\. Edit unused time off
+
+<img className="block" src="images/files_readme_io/_41b4884_Screenshot_2023_03_03_at_10.55.20_AM.png" alt="" />
+
+> ## 📘
+> 
+> The default behavior unused paid time off hours reflects the employee's current time off policy. However, employers should **check with their state requirements** to ensure compliance.
+> 
+> For policies set to pay employees for unused hours upon termination, the field will pre-populate the outstanding hours for paid time off.
+
+Unused sick leave defaults to 0 hours. The payroll admin can edit this amount and is responsible for following state compliance requirements.
+
+**Existing balance** is calculated as the difference between outstanding PTO and the PTO used in this pay period (from Step 2).
+
+**Accrued hours** are calculated based on the following variables:
+
+*   The time off policy accrual method, e.g. whether employees are paid per hour worked, with or without overtime, and have accumulated time off based on pay period / calendar year / anniversary
+*   Number of hours worked during this pay period
+*   Number of hours of PTO / sick leave taken during this pay period (for per hour paid policies only)
+*   Company pay schedule frequency (for per pay period)
+
+Here are some examples of how accrual is calculated:
+
+With the `per_pay_period` accrual method, let's say a policy has an accrual rate of 200 hours per year and the company has a biweekly schedule (26 pay periods in a year). Dividing 200 hours by 26 weeks, the employee will get ~7.69 hours for each pay period. Note that the working hours and time off within this pay period do not affect accrual hours.
+
+With the `per_hour_worked` accrual method, let's say a policy is accruing 1 hour for each 10 hours worked. If an employee worked 80 regular hours, 30 overtime hours, and 10 double overtime hours within a pay period they will have accrued 12 hours ((80 + 30 +10) ÷ 10).
+
+Because we don’t include PTO or sick leave with the `per_hour_worked` accrual method, if an employee worked 40 regular hours, took 16 for PTO and 8 for sick leave, they will have accrued 4 hours (40 ÷ 10).
+
+| Accrual Method | Example | Regular, Overtime, Double Overtime, PTO, Sick Hours Used | Hours Accrued |
+| --- | --- | --- | --- |
+| per hour worked | 1 hr accrued per 10 hours worked | **50**, **50**, **30**, 20, 5 | (50+50+30) / 10 = 13 |
+| per hour worked no overtime | 1 hr accrued per 10 hours worked | **50**, 40, 30, 20, 5 | 50 / 10 = 5 |
+| per hour paid | 1 hr accrued per 10 hours paid | **50**, **30**, **20**, **60**, **20** | (50+30+20+60+20) / 10 = 18 |
+| per hour paid no overtime | 1 hr accrued per 10 hours paid | **50**, 30, 20, **10**, **40** | (50+10+40) / 10 = 10 |
+| per pay period | accrual rate = 200  pay periods per year = 26  (biweekly pay schedule)  accrual rate / pay periods per year | Hours used doesn't affect hours accrued | 200 / 26 = 7.69 |
+| per calendar year | accrual rate = 100 | Hours used doesn't affect hours accrued | Hours accrued = accrual rate = 100 |
+| per anniversary year | accrual rate = 200 | Hours used doesn't affect hours accrued | Hours accrued = accrual rate = 200 |
+| unlimited |     | Hours used doesn't affect hours accrued | Always 0 |
+
+*   Accrual rate: total hours given per year
+*   Bolded hours affect the calculation per policy
+
+## 4\. Double check the earning statement
+
+After submitting the payroll, the payroll admin can:
+
+*   View the earning statement
+*   View their inputs from the flow and confirm the calculations in the employees earning section
+*   View outstanding paid time off pay and severance
+
