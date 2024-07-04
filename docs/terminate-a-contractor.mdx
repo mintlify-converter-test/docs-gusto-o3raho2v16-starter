@@ -1,0 +1,64 @@
+---
+title: "Mark Contractor as Inactive"
+description: "Instructions for marking a contractor as inactive using an API endpoint"
+---
+Because contractors do not have “employment” in the same way that W2 employees do terminations are not applicable, however you can mark a contractor as `inactive`.
+
+You can mark a contractor as inactive using the `PUT contractors/{contractor_uuid}` [endpoint](/embedded-payroll/reference/put-v1-contractors-contractor_id)
+.
+
+```curl
+curl --request PUT \
+     --url https://api.gusto-demo.com/v1/contractors/{contractor_uuid} \
+     --header 'accept: application/json' \
+     --header 'authorization: Bearer COMPANY_API_TOKEN' \
+     --header 'content-type: application/json' \
+     --data '
+{
+     "type": "Individual",
+     "self_onboarding": false,
+     "file_new_hire_report": false,
+     "version": "b48c46abfed1487b873b442334b3c4ff",
+     "start_date": "2021-01-01",
+     "first_name": "Fanny",
+     "last_name": "Brice",
+     "middle_initial": "X",
+     "wage_type": "Hourly",
+     "hourly_rate": "20.00",
+     "is_active": false
+}
+'
+
+``````curl
+const fetch = require('node-fetch');
+
+const url = 'https://api.gusto-demo.com/v1/contractors/{contractor_uuid}';
+const options = {
+  method: 'PUT',
+  headers: {
+    accept: 'application/json',
+    'content-type': 'application/json',
+    authorization: 'Bearer COMPANY_API_TOKEN'
+  },
+  body: JSON.stringify({
+    type: 'Individual',
+    self_onboarding: false,
+    file_new_hire_report: false,
+    version: 'b48c46abfed1487b873b442334b3c4ff',
+    start_date: '2021-01-01',
+    first_name: 'Fanny',
+    last_name: 'Brice',
+    middle_initial: 'X',
+    wage_type: 'Hourly',
+    hourly_rate: '20.00',
+    is_active: false
+  })
+};
+
+fetch(url, options)
+  .then(res => res.json())
+  .then(json => console.log(json))
+  .catch(err => console.error('error:' + err));
+
+```
+
