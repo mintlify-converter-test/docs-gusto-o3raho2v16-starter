@@ -1,0 +1,47 @@
+---
+title: "Gusto API Updates"
+description: "Enhancing developer experience with date-based versioning."
+---
+At Gusto we are committed to enhancing the developer experience by continuously improving services and introducing new features through the Embedded API. Using a date-based API versioning system allows us to release backward incompatible changes in new versions while ensuring existing versions continue to receive support and benefit from new features.
+
+For more information on all API updates including new version releases, visit our [API Changelog](https://docs.gusto.com/embedded-payroll/changelog)
+.
+
+### Release Schedule
+
+When [backward incompatible changes](/embedded-payroll/docs/api-versioning#backward-incompatible-changes)
+ are made to the API, we will release a new version on a monthly cadence. Additionally, smaller fixes or tweaks may be batched into future versions. However, if there are no changes requiring an immediate release in a given month, a new version will not be released.
+
+After a version is released, it is guaranteed to receive support for a minimum of 12 months. For improved performance and security, we strongly advise upgrading to the latest API version every quarter. To learn more about setting up API versioning visit our [getting setup](/embedded-payroll/docs/getting-setup)
+ guide.
+
+### Deprecation practices
+
+We strive to keep the Embedded API secure and up-to-date. If certain components become insecure, outdated, or unnecessary, we may mark them as deprecated. A deprecated version indicates that it is no longer supported and will be removed. Specifically, this entails updating the minimum API version in partner integration apps to the next stable version. Further details regarding the deprecated version will be announced in our [API Changelog](https://docs.gusto.com/embedded-payroll/changelog)
+ and guidance to aid in upgrading will live in our [version upgrade guide](/embedded-payroll/docs/version-upgrade-guide)
+.
+
+Once a version is removed, it becomes unusable. If your request header specifies a version older than the oldest supported stable version, your API request will return a `406 Not Acceptable error`. If no version is specified in the request header, your API request will default to the minimum API version listed in your Developer Portal.
+
+### Backward-incompatible changes
+
+We consider the following to be backward-incompatible changes:
+
+*   Deleting a resource or API endpoint.
+*   Deleting a response field.
+*   Modifying a resource or method URI.
+*   Modifying an existing field name.
+*   Modifying required query parameters.
+*   Modifying authorization.
+
+### Backward-compatible changes
+
+We consider the following to be backward-compatible changes:
+
+*   Adding new API endpoints.
+*   Adding new optional parameters to existing endpoints.
+*   Adding new response fields.
+*   Changing the order of properties in existing API responses.
+
+These non-breaking changes are additive in nature. They will be documented and applied to previously released API version.
+
