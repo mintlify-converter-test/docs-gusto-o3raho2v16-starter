@@ -1,0 +1,27 @@
+---
+title: "PaySchedule Webhooks"
+description: "Information on PaySchedule webhook events"
+---
+When subscribed to the `PaySchedule` webhooks you will receive the following events:
+
+| event\_type | description |
+| --- | --- |
+| pay\_schedule.created | Pay Schedule has been created |
+| pay\_schedule.updated | Pay Schedule has been updated |
+
+### Example payload
+
+```json
+{
+    "event_type": "pay_schedule.updated",
+    "resource_type": "Company",
+    "resource_id": 7757616923994151,
+    "resource_uuid": "9cf96c42-15f7-40db-ac7e-43ee6c7d8749",
+    "entity_type": "PaySchedule",
+    "entity_id": 7757518389593568,
+    "entity_uuid": "974e7f49-c385-47db-a8e1-69ec675497ef",
+    "timestamp": 1629760205,
+}
+
+```
+
