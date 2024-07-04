@@ -1,0 +1,28 @@
+---
+title: "Title goes here"
+description: "Description goes here"
+---
+When subscribed to the `EmployeeJobCompensation` webhooks you will receive the following events:
+
+| event\_type | description |
+| --- | --- |
+| employee\_job\_compensation.created | Employee job compensation has been created |
+| employee\_job\_compensation.updated | Employee job compensation has been updated |
+| employee\_job\_compensation.deleted | Employee job compensation has been deleted |
+
+### Example payload
+
+```json
+{
+  "event_type": "employee_job_compensation.created",
+  "resource_type": "Company",
+  "resource_id": 7756341741171842,
+  "resource_uuid": "5df911a0-e8e9-412d-8aaf-a46ad193dd96",
+  "entity_type": "EmployeeJobCompensation",
+  "entity_id": 7757842011281647,
+  "entity_uuid": "5df911a0-e8e9-412d-8aaf-a46ad193dd96",
+  "timestamp": 1671058841,
+}
+
+```
+
