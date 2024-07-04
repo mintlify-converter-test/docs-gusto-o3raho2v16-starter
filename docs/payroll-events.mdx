@@ -1,0 +1,27 @@
+---
+title: "ExternalPayroll Webhooks"
+description: "Receive events for External Payroll updates"
+---
+When subscribed to the `ExternalPayroll` webhooks you will receive the following events:
+
+| event\_type | description |
+| --- | --- |
+| external\_payroll.created | External Payroll has been created. |
+| external\_payroll.updated | External Payroll has been updated. |
+| external\_payroll.deleted | External Payroll has been deleted. |
+
+### Example payload
+
+```json
+{
+  "event_type": "external_payroll.updated",
+  "resource_type": "Company",
+  "resource_id": 7756341741171842,
+  "resource_uuid": "5df911a0-e8e9-412d-8aaf-a46ad193dd96",
+  "entity_type": "ExternalPayroll",
+  "entity_id": 7757842011281647,
+  "entity_uuid": "c02f2c32-34f7-4128-9145-7d49f0c3f355",
+  "timestamp": 1671058841
+}
+```
+
