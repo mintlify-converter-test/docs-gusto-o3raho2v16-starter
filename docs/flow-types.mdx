@@ -1,0 +1,72 @@
+---
+title: "Payroll"
+description: "Introduction to payroll flows and functionalities"
+---
+### You can try all of these flows in the Try It Now section.
+
+## Payroll
+
+| flow\_type | Description | Data Dependencies | entity\_type | entity\_uuid |
+| --- | --- | --- | --- | --- |
+| **run\_payroll** | Run payrolls and manage historical payrolls | Onboarded company | n/a | n/a |
+| **run\_payroll\_read\_only** | A read-only version of run payroll. This encompasses the review and submit steps of **run\_payroll** | Onboarded company, drafted payroll | Payroll | Payroll UUID |
+| **payroll\_receipt** | View a payroll receipt | Processed payroll | Payroll | Payroll UUID |
+| **contractor\_payments** | Run and manage contractor payrolls | Onboarded company, onboarded contractors | n/a | n/a |
+| **run\_off\_cycle\_payroll** | Run off-cycle payrolls and manage historical off-cycle payrolls | Onboarded company | n/a | n/a |
+| **run\_termination\_payroll** | Run and manage termination payrolls | Onboarded company, terminated employee | n/a | n/a |
+| **payroll\_history** | Manage historical off-cycle and regular payrolls | Onboarded company, processed payroll | n/a | n/a |
+| **manage\_payroll\_schedule** | Manage payroll schedules, including creating and assigning multiple pay schedules | Onboarded company | n/a | n/a |
+
+## Companies
+
+| flow\_type | Description | Data Dependencies | entity\_type | entity\_uuid |
+| --- | --- | --- | --- | --- |
+| **company\_onboarding** | Full company onboarding flow | n/a | n/a | n/a |
+| **add\_addresses** | Manage company's work, mailing, and filing addresses | n/a | n/a | n/a |
+| **federal\_tax\_setup** | Review and update company federal tax details | n/a | n/a | n/a |
+| **select\_industry** | Select the company industry | n/a | n/a | n/a |
+| **add\_bank\_info** | Add bank info manually or via Plaid | n/a | n/a | n/a |
+| **verify\_bank\_info** | Bank deposits verification | add\_bank\_info step | n/a | n/a |
+| **add\_employees** | Manage all employee onboarding | add\_addresses | n/a | n/a |
+| **state\_setup** | Review and update company state taxes. At this time, this only works for pre-onboarded companies | add\_addresses, add\_employees | n/a | n/a |
+| **payroll\_schedule** | Set company's payroll schedule | n/a | n/a | n/a |
+| **sign\_all\_forms** | Add signatory and sign company documents | add\_employees, federal\_tax\_setup, state\_setup, add\_bank\_info, payroll\_schedule | n/a | n/a |
+| **external\_payroll** | Create external payrolls for companies transferring from another payroll provider after the start of the year | add\_employees, federal\_tax\_setup, state\_setup | n/a | n/a |
+| **benefits** | Manage company and employee benefits | add\_employees | n/a | n/a |
+| **eoy\_company\_review** | Review company details and tax documents for end of year | Onboarded company | n/a | n/a |
+| **company\_information\_requests** | View all information requests for a company and respond to them | Onboarded company | n/a | n/a |
+| **company\_information\_submission** | Respond to all information requests for a company | Onboarded company | n/a | n/a |
+| **company\_recovery\_cases** | View all recovery cases for a company and initiate a redebit after the bank error is resolved | Onboarded company | n/a | n/a |
+| **reports** | Create custom reports for a company using custom columns, groupings, and optional filters | n/a | n/a | n/a |
+
+## W2 Employee
+
+| flow\_type | Description | Data Dependencies | entity\_type | entity\_uuid |
+| --- | --- | --- | --- | --- |
+| **add\_employees** | Manage all employee onboarding | Company add\_address | n/a | n/a |
+| **employee\_form\_signing** | For employee to review and sign documents | add\_employees | Employee | Employee's UUID |
+| **employee\_self\_management** | For employee to manage their own onboarding | add\_employees | Employee | Employee's UUID |
+| **employee\_federal\_setup** | For managing employee's federal taxes | add\_employees | Employee | Employee's UUID |
+| **employee\_state\_setup** | For managing employee's state taxes | add\_employees | Employee | Employee's UUID |
+| **manage\_employee\_addresses** | Update employee home and work address | add\_employees | Employee | Employee's UUID |
+| **terminations** | Create an employee termination | add\_employees | Employee | Employee's UUID |
+| **rehire** | Create an employee rehire | add\_employees, terminated employee | Employee | Employee's UUID |
+
+## Contractors
+
+| flow\_type | Description | Data Dependencies | entity\_type | entity\_uuid |
+| --- | --- | --- | --- | --- |
+| **add\_contractors** | Manage all contractor onboarding | Company | n/a | n/a |
+| **contractor\_documents** | For contractors to review and sign documents | Contractor | Contractor | Contractor UUID |
+| **contractor\_self\_management** | For a contractor to manage their own onboarding | add\_contractors | Contractor | Contractor UUID |
+| **contractor\_payments** | Run and manage contractor payrolls | Onboarded company and onboarded contractors | n/a | n/a |
+
+## Product Partnerships
+
+| flow\_type | Description | Data Dependencies | Additional Dependencies |
+| --- | --- | --- | --- |
+| **company\_workers\_compensation** | Employer requests workers compensation quote through Next Insurance | Onboarded company | Requires additional agreement with Next Insurance. If interested, please reach out to your Partner Success Manager. |
+| **company\_health\_insurance** | Employer requests health insurance quotes through SimplyInsured | Onboarded company, add\_employees | Requires additional agreement with SimplyInsured. If interested, please reach out to your Partner Success Manager. |
+| **company\_earned\_wage\_access\_enrollment** | Employer opts-in to offer on-demand pay to their employees through Clair | add\_employees | Requires additional agreement with Clair. If interested, please reach out to your Partner Success Manager. |
+| **employee\_earned\_wage\_access\_enrollment** | Employee accesses a Clair widget to sign up for a Clair account | add\_employees, Employer opts-in to offer on-demand pay | Requires additional agreement with Clair. If interested, please reach out to your Partner Success Manager. |
+
