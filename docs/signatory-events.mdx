@@ -1,0 +1,28 @@
+---
+title: "Signatory Webhooks"
+description: "Overview of events received when subscribed to the Signatory webhooks"
+---
+When subscribed to the `Signatory` webhooks you will receive the following events:
+
+| event\_type | description |
+| --- | --- |
+| signatory.created | Signatory has been created. |
+| signatory.updated | Signatory has been updated. |
+| signatory.deleted | Signatory has been deleted. |
+| signatory.marked\_for\_invite | Signatory has been marked for invitation. No email has been sent by Gusto. |
+
+### Example payload
+
+```json
+{
+  "event_type": "signatory.created",
+  "resource_type": "Company",
+  "resource_id": 7757616924740529,
+  "resource_uuid": "88f7cca1-dcad-4d20-84db-7fb80303d69f",
+  "entity_type": "Signatory",
+  "entity_id": 7757491335866020,
+  "entity_uuid": "7b1d0df1-6403-4a06-8768-c1dd7d24d27a",
+  "timestamp": 1658773140
+}
+```
+
