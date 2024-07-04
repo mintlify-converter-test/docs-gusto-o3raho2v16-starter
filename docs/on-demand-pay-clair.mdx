@@ -1,0 +1,74 @@
+---
+title: "What is On-Demand Pay / Earned Wage Access (EWA)?"
+description: "Access earned wages before scheduled payday."
+---
+## What is On-Demand Pay / Earned Wage Access (EWA)?
+
+On-Demand Pay, also known as Earned Wage Access (EWA), gives employees the option to access earned wages / funds before their scheduled payday. Clair on-demand pay is available through the Company and Employee Earned Wage Access Enrollment Flows.
+
+> ## 📘Adding Clair's Offering
+> 
+> Being able to offer workers’ compensation to customers may require an additional agreement. If interested, please reach out to your Partner Success Manager.
+
+## \[Employer POV\] Flow Experience Walkthrough
+
+### 1\. Launch company\_earned\_wage\_access\_enrollment
+
+```curl
+curl --request POST \
+     --url https://api.gusto-demo.com/v1/companies/company_uuid/flows \
+     --header 'accept: application/json' \
+     --header 'content-type: application/json'
+     --data '
+{
+  "flow_type": "company_earned_wage_access_enrollment"
+}
+
+```
+
+Launching the company\_earned\_wage\_access\_enrollment Flow will display the following:
+
+<img className="block" src="images/files_readme_io/_1ac0c2d_image.png" alt="" />
+
+### 2\. Employer - Granting Access
+
+Clair needs access to specific payroll information at both employer and employee levels in order to offer on-demand pay. Clicking “Connect” will enable access to this information, allow viewing + managing of users, sync employee + payroll information, and manage payrolls accordingly.
+
+<img className="block" src="images/files_readme_io/_0680bea_image.png" alt="" />
+
+### 3\. Completion
+
+All done! The following message will be displayed once connected.
+
+<img className="block" src="images/files_readme_io/_aaa6199_image.png" alt="" />
+
+## \[Employee POV\] Flow Experience Walkthrough
+
+### 1\. Employee - Opt In
+
+Once the company has connected to Clair, their employees will be able to opt-in during the payroll onboarding process (after entering their banking information).
+
+<img className="block" src="images/files_readme_io/_bd89829_image.png" alt="" />
+
+### 2\. Clair - Account Signup
+
+Upon opt-in, employees will be able to sign up for a Clair account by providing information like name, email, and SSN. On occasion, employees will need to wait to have their information verified.
+
+> ## 📘Gusto - Onboarding Completion
+> 
+> Gusto employee onboarding can be completed without Clair. In addition, the employee must be fully onboarded through Gusto before they will be able to use Clair’s ODP service. Partners offering Clair may need to provide additional guidance here.
+
+<img className="block" src="images/files_readme_io/_262d859_image.png" alt="" />
+
+<img className="block" src="images/files_readme_io/_a55cc42_image.png" alt="" />
+
+### 3\. Download the Clair App
+
+Once sign up and verification have been confirmed, employees will need to download the Clair app on their mobile phone to access their bank account. In order to be eligible for On-Demand Pay, employees can select a percentage (up to 100%) of their paycheck to direct deposit into their Clair Spending Account.
+
+<img className="block" src="images/files_readme_io/_751ddc6_image.png" alt="" />
+
+### 4\. Completion
+
+Employees can then use the Clair App to instantly advance a portion of their day’s wages without incurring any fees.
+
