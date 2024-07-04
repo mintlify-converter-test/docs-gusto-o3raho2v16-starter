@@ -1,0 +1,49 @@
+---
+title: "Bank Errors"
+description: "Payment issues and error codes overview"
+---
+## What are bank errors?
+
+In the event of a payment issue or failure, the receiving bank (the customer/employee/contractor’s bank) will send a bank error code to our system to notify us of the problem. When this happens, the admin and impacted employee/contractor (if applicable) are notified to resolve the specific error. There are two different types of bank errors: **“R” errors** and **“C” errors**. [Click here](/embedded-payroll/docs/ach-codes-and-transaction-types)
+ for a full list of ACH Codes.
+
+### "R" Errors
+
+“R” errors usually mean that the payment attempt was unsuccessful, and the money did not ultimately move as intended. Further research is required to see if Gusto will automatically reverse the payroll, re-attempt the transmission, etc. Who has the funds? This depends upon the payment direction.
+
+*   If the payment direction was a credit, then this usually means that Gusto has the funds and the intended recipient did not receive the money.
+*   If the payment direction was a debit, then the other party has the funds ex. the company, employee, contractor.
+
+A few example “R” error codes and situations indicating unsuccessful payments are listed below:
+
+| "R" Error Code | Situation |
+| --- | --- |
+| **R01: “Insufficient Funds” -** Gusto attempted to debit money from a bank account, but there was not enough money in that bank account to cover the instructed amount. Therefore, the receiving bank could not complete the transaction | Customer processes a payroll for $1000, but they only have $900 in their bank account. Gusto attempts to debit $1000 from the customer’s bank account. Upon receiving Gusto’s request for $1000 from this customer, the customer’s bank sends an R01 bank error back to Gusto indicating that the transaction could not be completed due to insufficient funds. |
+| **R03: “No Account/Unable to Locate Account” -** Invalid bank account details. | A customer’s employee onboards with an invalid bank account number. When Gusto attempts to send this employee’s direct deposit payment to their bank account, the employee’s bank sends an R03 bank error to Gusto indicating that the transaction could not be completed because the bank account number is incorrect. |
+| **R08: “Payment Stopped or Stop Payment on Item” -** Recipient instructed their bank to block the transaction. | The customer processed payroll and overpaid an employee. The customer reversed the payroll, and Gusto attempted to pull the overpaid funds from the employee’s bank account. However, the employee instructed their bank not to release the funds to Gusto. Therefore, the employee’s bank would send an R08 bank error to Gusto’s bank indicating that the individual placed a stop payment on the debit attempt. |
+
+### "C" Errors
+
+“C” errors, also called “Notification of Change” codes or “NOCs”, are informational-only and mean that the money did eventually make it to the correct recipient and although there was a slight error in the payment instructions, the receiving bank was able to re-route and successfully process the funds to the correct bank account. The receiving bank also provides Gusto with the corrected information, and our system automatically updates the bank account information on file so that future payouts will not be affected. Who has the funds? This depends upon the payment direction.
+
+*   If the payment direction was a credit, then the intended recipient should have received the funds. Depending upon their bank’s processing times, the recipient may experience a slight payment delay.
+*   If the payment direction was a debit, then Gusto has the funds.
+
+A few example “C” error codes and situations that require attention indicating banking details have changed are listed below:
+
+| "C" Error Code | Situation |
+| --- | --- |
+| **C01: “Incorrect bank account number” -** The company/employee/contractor added an incorrect bank account number or formatted it incorrectly. However, the receiving bank was able to determine the correct bank account number and still post the funds to the intended recipient’s account. | Employee banks with Chase and enters their bank account number as 12345, but the correct bank account number is 123456. Even though Gusto’s payment instructions are for account number 12345, Chase identifies the correct account number as 123456 and posts the direct deposit payment there instead. Chase sends Gusto a C01 bank error specifying 123456 as the corrected information. Gusto’s system updates the employee’s bank account number from 12345 to 123456 accordingly. |
+| **C04: “Bank account name change” -** The company/employee/contractor’s name on file with Gusto is different from their bank account setup. However, the receiving bank was able to determine the correct bank account and still post the funds to the intended recipient’s account. | The employee onboards as “Mike Smith”, but their bank account is under “Michael Smith”. Even though Gusto’s payment instructions are for “Mike Smith”, the employee’s bank applies the payment to “Michael Smith” bank account. |
+
+## When are bank errors received?
+
+These error codes are usually sent by the receiving bank within 3 business days from when the transaction was processed.
+
+*   For debits with bank errors: Bank error should appear by the “Payment Date” of the transmission, which should be 2 business days from the payment\_event\_check\_date.
+*   For credits with bank errors: Bank error should appear 3 business days after the "Created At" date or 2 business days after the payment\_event\_check\_date.
+
+> ## 📘Variance in Error Codes
+> 
+> The vast majority of error codes are sent within 3 business days. However, occasionally, these errors can be sent over a 30 day period.
+
