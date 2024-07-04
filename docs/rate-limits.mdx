@@ -1,0 +1,8 @@
+---
+title: "Rate Limits"
+description: "Rate limits are scoped on an application-user pair at 200 requests per minute"
+---
+**Rate limits are scoped on an application-user pair at 200 requests per minute.** This means that you can make 200 calls per minute on behalf of each user/company that has connected your application. If you make more than 200 calls for a single user in the window, subsequent requests will return responses with the HTTP status `429: Too Many Requests` until the window closes.
+
+Excessive calls to the Gusto API over a short period of time are subject to rate limits. Rate limits are enforced in a 60-second **rolling window**. The window opens after your first API call and closes after 60 seconds has elapsed. A new window opens when you send your next API request.
+
