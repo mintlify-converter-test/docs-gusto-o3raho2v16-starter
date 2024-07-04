@@ -1,0 +1,104 @@
+---
+title: "Create a Department"
+description: "Guide to using the POST companies/{company_uuid}/departments endpoint"
+---
+Before using this guide you must have a [developer account](https://dev.gusto.com/organizations)
+, created an [application](https://dev.gusto.com/applications)
+ and have a company. To learn more about these steps, review the [Getting Started](/embedded-payroll/docs/getting-started)
+ guide.
+
+Departments can be used for employers to understand, organize and report on their employees.
+
+### 1\. Create a department
+
+To create a department, use the `POST companies/{company_uuid}/departments` [endpoint](/embedded-payroll/reference/post-departments)
+.
+
+```curl
+curl --request POST \
+     --url https://api.gusto-demo.com/v1/companies/{company_uuid}/departments \
+     --header 'accept: application/json' \
+     --header 'authorization: Bearer COMPANY_ACCESS_TOKEN' \
+     --header 'content-type: application/json' \
+     --data '
+{
+     "title": "Stage Hand"
+}
+'
+
+``````curl
+const fetch = require('node-fetch');
+
+const url = 'https://api.gusto-demo.com/v1/companies/{company_uuid}/departments';
+const options = {
+  method: 'POST',
+  headers: {
+    accept: 'application/json',
+    'content-type': 'application/json',
+    authorization: 'Bearer COMPANY_ACCESS_TOKEN'
+  },
+  body: JSON.stringify({title: 'Stage Hand'})
+};
+
+fetch(url, options)
+  .then(res => res.json())
+  .then(json => console.log(json))
+  .catch(err => console.error('error:' + err));
+
+```
+
+### 2\. Add employees and/or contractors to the department
+
+Use the `PUT departments/{department_uuid}/add` [endpoint](/embedded-payroll/reference/put-add-people-to-department)
+ to add employees and contractors to a department.
+
+```curl
+curl --request PUT \
+     --url https://api.gusto-demo.com/v1/departments/{department_uuid}/add \
+     --header 'accept: application/json' \
+     --header 'authorization: Bearer COMPANY_ACCESS_TOKEN' \
+     --header 'content-type: application/json' \
+     --data '
+{
+     "employees": [\
+          {\
+               "uuid": "41199375-a999-4414-9f40-d9bf596b134d"\
+          }\
+     ],
+     "contractors": [\
+          {\
+               "uuid": "3488549f-60e4-494f-a34a-9d8aad3aabf5"\
+          }\
+     ],
+     "version": "1fe3076d35ef7c97d0ae68c5f4df0acd"
+}
+'
+
+``````curl
+const fetch = require('node-fetch');
+
+const url = 'https://api.gusto-demo.com/v1/departments/{department_uuid}/add';
+const options = {
+  method: 'PUT',
+  headers: {
+    accept: 'application/json',
+    'content-type': 'application/json',
+    authorization: 'Bearer COMPANY_ACCESS_TOKEN'
+  },
+  body: JSON.stringify({
+    employees: [{uuid: '41199375-a999-4414-9f40-d9bf596b134d'}],
+    contractors: [{uuid: '3488549f-60e4-494f-a34a-9d8aad3aabf5'}],
+    version: '1fe3076d35ef7c97d0ae68c5f4df0acd'
+  })
+};
+
+fetch(url, options)
+  .then(res => res.json())
+  .then(json => console.log(json))
+  .catch(err => console.error('error:' + err));
+
+```
+
+To remove people from a department you can use the `PUT departments/department_uuid/remove` [endpoint](/embedded-payroll/reference/put-remove-people-from-department)
+.
+
