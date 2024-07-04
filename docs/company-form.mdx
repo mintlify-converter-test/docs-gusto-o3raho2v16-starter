@@ -1,0 +1,125 @@
+---
+title: "Company Forms"
+description: "Information on onboarding and tax forms for a company"
+---
+A company will have onboarding forms to be signed (ie Form 8655 and direct deposit authorization) and tax forms which will be filed (ie Forms 941 or 944, FUTA 940, and other State level forms).
+
+## List all Company Forms
+
+To see a list of all current company forms, use the `GET companies/{company_uuid}/forms` [endpoint](/embedded-payroll/reference/get-v1-company-forms)
+. This will return all company forms currently on file for a company. A new company will have to complete the Direct Deposit Authorization and Form 8655 at minimum, plus any State-specific authorization forms.
+
+```curl
+curl --request GET \
+     --url https://api.gusto-demo.com/v1/companies/{company_uuid}/forms \
+     --header 'accept: application/json' \
+     --header 'authorization: Bearer COMPANY_ACCESS_TOKEN'
+
+``````curl
+const fetch = require('node-fetch');
+
+const url = 'https://api.gusto-demo.com/v1/companies/{company_uuid}/forms';
+const options = {
+  method: 'GET',
+  headers: {accept: 'application/json', authorization: 'Bearer COMPANY_ACCESS_TOKEN'}
+};
+
+fetch(url, options)
+  .then(res => res.json())
+  .then(json => console.log(json))
+  .catch(err => console.error('error:' + err));
+
+```
+
+> ## 📘
+> 
+> Company Tax Forms will not be available until payrolls have been processed and the associated tax filings have been generated. These tax forms will be accessible in accordance with the filing frequency requirements of each agency. For a list of all state and federal tax forms filed by Gusto, please refer to this [support article](https://support.gusto.com/article/106622058100000/Federal-and-state-taxes-and-forms-filed-by-gusto)
+> .
+
+## PDFs of Forms
+
+You can retrieve any form as a PDF in order to supply it to your users. To get a PDF use the `uuid` for the specific form and the `GET forms/{form_uuid}/pdf` [endpoint](/embedded-payroll/reference/get-v1-company-form-pdf)
+.
+
+> ## 📘Expiration
+> 
+> Note that the PDF links expire after 30 seconds for security purposes. We recommend saving the PDF securely in your application to prevent link expiration.
+
+```curl
+curl --request GET \
+     --url https://api.gusto-demo.com/v1/forms/{form_uuid}/pdf \
+     --header 'accept: application/json' \
+     --header 'authorization: Bearer COMPANY_ACCESS_TOKEN'
+
+``````curl
+const fetch = require('node-fetch');
+
+const url = 'https://api.gusto-demo.com/v1/forms/{form_uuid}/pdf';
+const options = {
+  method: 'GET',
+  headers: {accept: 'application/json', authorization: 'Bearer COMPANY_ACCESS_TOKEN'}
+};
+
+fetch(url, options)
+  .then(res => res.json())
+  .then(json => console.log(json))
+  .catch(err => console.error('error:' + err));
+
+```
+
+## Sign Company Forms
+
+Before signing company forms, a signatory must be designated. You can create a signatory using the `POST companies/{company_uuid}/signatories` [endpoint](/embedded-payroll/reference/post-v1-company-signatories)
+. You can see a more in depth creation of a signatory in the [Onboard A Company](/embedded-payroll/docs/onboard-a-company#11-add-a-signatory-optional)
+ guide.
+
+Before signing company forms to complete Onboarding, the following steps must be completed.
+
+*   `"add_employees"`
+*   `"federal_tax_setup"`
+*   `"state_setup"`
+*   `"add_bank_info"`
+*   `"payroll_schedule"`
+
+If a form has `requires_signing = true`, you can use the `PUT forms/{form_uuid}/sign` [endpoint](/embedded-payroll/reference/put-v1-company-form-sign)
+.
+
+```curl
+curl --request PUT \
+     --url https://api.gusto-demo.com/v1/forms/{form_uuid}/sign \
+     --header 'accept: application/json' \
+     --header 'authorization: Bearer COMPANY_ACCESS_TOKEN' \
+     --header 'content-type: application/json' \
+     --data '
+{
+     "signature_text": "Jean Valjean",
+     "agree": true,
+     "signed_by_ip_address": "192.168.0.1"
+}
+'
+
+``````curl
+const fetch = require('node-fetch');
+
+const url = 'https://api.gusto-demo.com/v1/forms/{form_uuid}/sign';
+const options = {
+  method: 'PUT',
+  headers: {
+    accept: 'application/json',
+    'content-type': 'application/json',
+    authorization: 'Bearer COMPANY_ACCESS_TOKEN'
+  },
+  body: JSON.stringify({
+    signature_text: 'Jean Valjean',
+    agree: true,
+    signed_by_ip_address: '192.168.0.1'
+  })
+};
+
+fetch(url, options)
+  .then(res => res.json())
+  .then(json => console.log(json))
+  .catch(err => console.error('error:' + err));
+
+```
+
