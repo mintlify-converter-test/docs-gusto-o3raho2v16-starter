@@ -1,0 +1,255 @@
+---
+title: "Partner Notification System"
+description: "System for partners to receive and pass along key payroll events"
+---
+In order for our Embedded Payroll partners to communicate with employers, employees, signatories, and contractors, Gusto Embedded has launched our Partner Notification System. A combination of webhook events and a Notification endpoint that will allow partners to be informed of key payroll events which they can then pass along to their users.
+
+The Partner Notification System will allow partners to customize their end communication as they see fit. Notifications will be categorized, will include message titles and copy, will indicate whether or not the action is required, and will inform if payroll is blocked until the action is taken. Text messages, emails, and dashboard banners can all be built on top of the Notification System to ensure customers are made aware of critical items and take the steps necessary to focus on getting people paid correctly and on time.
+
+## How to implement
+
+**Webhook events**
+
+The first step in utilizing the Notification System will be to subscribe to the [notifications webhook events](https://docs.gusto.com/embedded-payroll/docs/notification-events)
+. Each notification event will follow this general format:
+
+```json
+{
+  "event_type": "notification.information_request.created",
+  "resource_type": "Company",
+  "resource_id": 1,
+  "resource_uuid": "f6a168b4-487d-4688-8812-911c86803b57",
+  "entity_type": "Notification",
+  "entity_id": 2,
+  "entity_uuid": "86e785b3-37a1-40ed-94e4-3cedd3f2fc90",
+  "timestamp": 1688587457
+}
+```
+
+The webhook notification events will be triggered when a notification is **created**, when a notification **expires**, and when the notification has been **resolved**. The `.resolved` or `.expired` event will have the same title and message as the original notification event. It is important to note that not all notifications will resolve or expire: If the notification is informational only, it can be left open indefinitely (more to come later).
+
+| **event\_type** | **description** |
+| --- | --- |
+| notification.{category}.created | A partner notification has been created, meaning it is a new notification. |
+| notification.{category}.resolved | A partner notification has been resolved, meaning the notification has been addressed and no further action required. |
+| notification.{category}.expired | A partner notification has expired, meaning the notification is no longer applicable for a user. Note: only some notifications can expire, not all. |
+
+> ## 📘Events endpoint
+> 
+> If a webhook notification event is ever missed, we do have a “get-events” endpoint that can be leveraged. That endpoint can be found [here](https://docs.gusto.com/embedded-payroll/reference/get-events)
+> . This endpoint can pull all webhook events by company or it can be used to grab a single webhook event.
+> 
+> Note that all partners should be leveraging our webhook events for their payroll build. Relying solely on the “get-events” endpoint for their build is not encouraged. Because events will be removed after 30 days, only use this endpoint as a failsafe.
+
+**Notification endpoint**
+
+Using the notification ID, call the notification endpoint to build out your end customer communication. Each notification will include the following information:
+
+*   The company UUID
+*   The title of the notification
+*   The message with additional context
+*   The category (this will mirror the category that is in the webhook event)
+*   Boolean for actionable (is there an action that needs to be performed by an individual at the company)
+
+There are three types of notifications you will run into:
+
+*   **[Informational](https://docs.gusto.com/embedded-payroll/docs/partner-notifications#section-informational)
+    **
+*   **[Actionable to be closed out in partner platform](https://docs.gusto.com/embedded-payroll/docs/partner-notifications#section-actionable-to-be-closed-out-in-partner-platform)
+    **
+*   **[Actionable and Gusto resolved](https://docs.gusto.com/embedded-payroll/docs/partner-notifications#section-actionable-and-gusto-resolved)
+    **
+
+##### Informational:
+
+For this use case, there is no specific action requested of the user but the information has been identified as valuable to pass along to the intended user.
+
+An example would be if tax forms had been filed. The implementation would look like this:
+
+1.  Notification is created when forms are available:
+
+```json
+{
+  "event_type": "notification.forms_filed.created",
+  "resource_type": "Company",
+  "resource_id": 1,
+  "resource_uuid": "f6a168b4-487d-4688-8812-911c86803b57",
+  "entity_type": "Notification",
+  "entity_id": 2,
+  "entity_uuid": "86e785b3-37a1-40ed-94e4-3cedd3f2fc90",
+  "timestamp": 1688587457
+}
+```
+
+2.  Then using the Notification `entity_uuid` from the above notification webhook event, make a request to the [notifications endpoint](https://docs.gusto.com/embedded-payroll/reference/get-notifications-notification_uuid)
+    , which will return additional information:
+
+```json
+{
+  "uuid": "86e785b3-37a1-40ed-94e4-3cedd3f2fc90",
+  "company_uuid": "88f7cca1-dcad-4d20-84db-7fb80303d69f",
+  "title": "Tax Forms are now available for %[Quarter] for Review",
+  "message": "Filings were submitted successfully and are now available.",
+  "category": "forms_filed",
+  "actionable": false,
+  "published_at": "2022-01-01T00:00:00.000Z"
+}
+```
+
+3.  With the information from that response a partner can pass along the information to the end user(s). This could be done via email, text, dashboard notification, etc.
+4.  If the notification has a defined expiration point, a webhook event will come back like this\*\*
+
+```json
+{
+  "event_type": "notification.forms_filed.expired",
+  "resource_type": "Company",
+  "resource_id": 1,
+  "resource_uuid": "f6a168b4-487d-4688-8812-911c86803b57",
+  "entity_type": "Notification",
+  "entity_id": 2,
+  "entity_uuid": "86e785b3-37a1-40ed-94e4-3cedd3f2fc90",
+  "timestamp": 1688587457
+}
+```
+
+5.  As an optional step, you could relay the expiration to the end user (ex. dismiss a dashboard banner).
+
+\*\*Since Gusto is unable to verify the receipt of this message to the end customer we won’t automatically close the notification out, it will remain “open”. In certain situations, the notification will change to “expired” if Gusto can guarantee that the notification is no longer applicable to a user. [This](https://docs.gusto.com/embedded-payroll/docs/partner-notifications-types)
+ table indicates which informational-only notifications remain open and which notifications expire.
+
+##### Actionable to be closed out in partner platform:
+
+In the second use case, similar to informational notifications, they will not auto-change to “resolved”, but they do require an action be performed by the user. These notifications stay “open” or may expire.
+
+An example would be incorrect employee information input (birth date, legal name, or social security number):
+
+1.  Notification is created when Gusto detects an error with an employee's personal information.
+
+```json
+{
+  "event_type": "notification.invalid_ssn.created",
+  "resource_type": "Company",
+  "resource_id": 1,
+  "resource_uuid": "f6a168b4-487d-4688-8812-911c86803b57",
+  "entity_type": "Notification",
+  "entity_id": 2,
+  "entity_uuid": "99998888888",
+  "timestamp": 1688587457
+}
+```
+
+2.  Using that Notification Entity ID from the notification webhook, make the API call to the notifications endpoint:
+
+```json
+{
+  "uuid": "99998888888",
+  "company_uuid": "88f7cca1-dcad-4d20-84db-7fb80303d69f",
+  "title": "Action required: Update %{person_full_name}’s tax info",
+  "message": "This employee's information doesn’t match what’s on file with the Social Security agency. Fixing this will help make sure tax filings go smoothly.",
+  "category": "invalid_ssn",
+  "actionable": true,
+  "published_at": "2022-01-01T00:00:00.000Z"
+}
+```
+
+3.  With the information from that response, the partner can pass along the information to the end user(s). This could be done via email, text, dashboard notification, etc. The partner can also include guidance with links to the Social Security Administration website on what information is needed for validation.
+4.  The notification will stay open, but since the communication has been sent, there is no further job for the partner, if the notification expires, a subsequent webhook would come through.
+
+##### Actionable and Gusto Resolved:
+
+In the final use case, when notifications involve specific Gusto action, they will automatically resolve once the action has been confirmed and completed on the Gusto end.
+
+An example of this notification would be when a company goes into recovery because it defaulted on a faster payroll.
+
+1.  A notification is created for when the payroll goes into recovery:
+
+```json
+{
+  "event_type": "notification.recovery_case.unfreeze_bank_account.created",
+  "resource_type": "Company",
+  "resource_id": 1,
+  "resource_uuid": "f6a168b4-487d-4688-8812-911c86803b57",
+  "entity_type": "Notification",
+  "entity_id": 2,
+  "entity_uuid": "0009",
+  "timestamp": 1688587457
+}
+```
+
+2.  Using that Notification Entity ID from the notification webhook, make the API call to the notifications endpoint:
+
+```json
+{
+  "uuid": "0009",
+  "company_uuid": "88f7cca1-dcad-4d20-84db-7fb80303d69f",
+  "title": "Action required: Unfreeze bank account to unblock payroll",
+  "message": "We weren’t able to debit funds for the %{date} %{event}. To pay the team on time, unfreeze the associated bank account as soon as possible.",
+  "category": "print_paychecks",
+  "actionable": true,
+  "published_at": "2022-01-01T00:00:00.000Z"
+}
+```
+
+3.  In order to then re-trigger the debit for the payroll and pay the team on time for the next payroll, the partner can pass along the message to the user and can generate a pre-built Gusto designed flow where we show all recovery cases and how to resolve them:
+
+<img className="block" src="images/files_readme_io/_edb70ad_Screenshot_2024_01_14_at_1.51.46_PM.png" alt="Example of a notification webhook event payload" />
+
+(for more on the recovery case flow, click [here](https://docs.gusto.com/embedded-payroll/docs/recovery-cases-1)
+)
+
+4.  Once that case has been resolved, we will send a notification event indicating the action was resolved:
+
+```json
+{
+  "event_type": "notification.recovery_case.unfreeze_bank_account.resolved",
+  "resource_type": "Company",
+  "resource_id": 1,
+  "resource_uuid": "f6a168b4-487d-4688-8812-911c86803b57",
+  "entity_type": "Notification",
+  "entity_id": 2,
+  "entity_uuid": "0009",
+  "timestamp": 1688587457
+}
+```
+
+5.  The partner can then choose to pass along the resolution or ignore an let the customer continue with processing payroll.
+
+There are several different notifications in which GEP provides accompanying flows to help resolve, including:
+
+*   Request for Information
+*   Invalid Signatory
+*   Recovery Cases
+
+## Additional FAQs
+
+**Should I be storing notification information on my end? The events and information?**
+
+Yes! This is the best path to tracking the paper trail of communication with your customers. There are also notifications that are not set to expire or resolve on the GEP side; that tracking needs to be done on the Embedded Partner side.
+
+**Can I resolve notifications myself?**
+
+No, this is a read-only endpoint and notifications that are resolved only come with certain notifications based on the nature of the notification. For a break down of the treatment of each notification more detail can be found [here](https://docs.gusto.com/embedded-payroll/docs/partner-notifications-types)
+.
+
+**I thought GEP sent emails to users, is that still the case?**
+
+We are in the process of deprecating all direct email notifications to end customers given the inflexibility in copy and the clear Gusto branding (the emails are intended for Gusto.com users and not Gusto Embedded). For all current partners we will be providing a grace period to switch over to the new email system in the future. During this overlap in development, you may receive both a webhook notification and Gusto branded email for the same use case.
+
+**How do I test these notifications?**
+
+The trigger points themselves will occur at the logical points in which we’d create a notification, ex. If an RFI is created then a notification will come through. For help with testing please reach out to your TS representative for more assistance.
+
+**Will Embedded be adding more notification categories in the future?**
+
+Yes, we’ll add and refine notifications over time as we identify improvements.
+
+## Deprecating Gusto.com emails
+
+As part of this project, we will be sequentially deprecating Gusto.com branded emails from being sent directly to company payroll admins, and replacing them with a new notification category. This rollout will happen in prioritized batches.
+
+At the initial rollout of each new notification we plan to keep both emails and notification webhook events enabled to ensure a smooth transition. We will notify you in advance about which emails we plan to deprecate, and when, in order to allow sufficient time for you to integrate with this new partner notification system. A schedule of this migration process and the date each email will be deprecated is published [here](/embedded-payroll/reference/deprecated-gustocom-emails)
+, and will be regularly updated.
+
+*   [Deprecated Gusto.com emails](/embedded-payroll/docs/deprecated-gustocom-emails)
+    
+
