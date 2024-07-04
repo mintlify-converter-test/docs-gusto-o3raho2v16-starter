@@ -1,0 +1,41 @@
+---
+title: "Setting your API version"
+description: "Configure API version using X-Gusto-API-Version header."
+---
+### Setting your API version
+
+You can set the API version by including a `X-Gusto-API-Version` header in your API calls.
+
+```curl
+curl --request GET \
+     --url https://api.gusto-demo.com/v1/me \
+     --header 'Accept: application/json' \
+     --header 'Authorization: Bearer {ACCESS_TOKEN}' \
+     --header 'X-Gusto-API-Version: 2022-09-15'
+
+```
+
+If no `X-Gusto-API-Version` is specified, the minimum API version will be used. You may notice that all Gusto API request URLs include `v1`. This should remain the same for all requests regardless of API version; the value passed into the `X-Gusto-API-Version` header will determine the date-based API version associated with your API call.
+
+We also pass back the `X-Gusto-API-Version` in the response header as a way for callers to confirm that their requested `X-Gusto-API-Version` was respected.
+
+### Minimum API Version
+
+We use your application’s minimum API version to validate the supplied `X-Gusto-API-Version` header version. If the header version is using an API version that is _**older**_ than the minimum API version, your API request will return a `406 Not Acceptable` error.
+
+```json
+{
+  "name": "Invalid X-Gusto-API-Version Header",
+  "message": "Invalid API Version `2022-09-15`. Version must be >= your application's minimum API version `2022-11-01` and not in the future."
+}
+```
+
+> ### Version Creation
+> 
+> When you create a demo application, the minimum API version is automatically set to the latest stable version of our API. Your production application’s minimum API version will be set during the launch process.
+
+You can view your applications minimum API version in the [Developer Portal](https://dev.gusto.com/account/sign_in)
+.
+
+<img className="block" src="images/files_readme_io/_e701450_Screen_Shot_2022_12_06_at_9.46.55_AM.png" alt="" />
+
