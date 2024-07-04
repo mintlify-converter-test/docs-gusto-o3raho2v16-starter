@@ -1,0 +1,38 @@
+---
+title: "Form Webhooks"
+description: "List of form webhook events and descriptions"
+---
+When subscribed to the `Form` webhooks you will receive the following events:
+
+| event\_type | description | references |
+| --- | --- | --- |
+| company.form.created | Company form has been created | {"company\_uuid": ""} |
+| company.form.updated | Company form has been updated | {"company\_uuid": ""} |
+| company.form.signed | Company form has been signed | {"company\_uuid": ""} |
+| contractor.form.created | Contractor form has been created | {"contractor\_uuid": ""} |
+| contractor.form.updated | Contractor form has been update | {"contractor\_uuid": ""} |
+| contractor.form.signed | Contractor form has been signed | {"contractor\_uuid": ""} |
+| employee.form.created | Employee form has been created | {"employee\_uuid": ""} |
+| employee.form.updated | Employee form has been update | {"employee\_uuid": ""} |
+| employee.form.signed | Employee form has been signed | {"employee\_uuid": ""} |
+
+Form webhooks contain `references` that will have the additional UUIDs to call the Gusto API to retrieve the entire **entity**. The example below contains **references** because an employee UUID is required to retrieve the form from the API /v1/employees/{employee\_uuid}/forms/{form\_uuid}
+
+### Example payload
+
+```json
+{
+  "event_type": "employee.form.updated",
+  "resource_type": "Company",
+  "resource_id": 7756341741171842,
+  "resource_uuid": "5df911a0-e8e9-412d-8aaf-a46ad193dd96",
+  "entity_type": "Form",
+  "entity_id": 7757842011281647,
+  "entity_uuid": "c02f2c32-34f7-4128-9145-7d49f0c3f355",
+  "timestamp": 1671058841,
+  "references": {
+    "employee_uuid": "5df911a0-e8e9-412d-8aaf-a46ad193dd96"
+  }
+}
+```
+
