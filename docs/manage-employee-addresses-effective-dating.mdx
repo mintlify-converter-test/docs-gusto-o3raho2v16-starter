@@ -1,0 +1,226 @@
+---
+title: "Employee Address Changes"
+description: "Proper effective dating for compliance."
+---
+Employees may move to a new home or work address during their tenure with a company. These changes may impact their and/or a company’s tax liability so effective dating should be leveraged to ensure these moves are properly recorded for compliance purposes. Proper utilization of effective dating will reduce downstream tax notices and the need for expedited/reversal payrolls as a result of last minute address changes.
+
+### Get an Employee’s Home Addresses
+
+The home address of an employee will determine certain tax information about them. Addresses are geocoded when created and updated to ensure validity. Use the [Get an employee’s home addresses](/embedded-payroll/reference/get-v1-employees-employee_id-home_addresses)
+ endpoint to retrieve all employee home addresses in effective date order and to determine if there is an applicable courtesy withholding. The address with the status `"active": true,` is the employee’s current active home address. The `effective_date` signifies when the employee began living at this location. `”courtesy_withholding”: true` indicates there is an active courtesy withholding at this location.
+
+> ## 📘Courtesy Withholdings
+> 
+> Federal law prohibits two states from taxing the same income—for employees who live and work in different states, and file more than one state tax return, reciprocal agreements exist so that they only pay income taxes to one state (usually their home state of residency) on the same wages.
+> 
+> Several states have reciprocal agreements with other states, ensuring that employees who work and live in those different states, don’t have to have taxes withheld in more than one of them. A courtesy withholding allows an employer to elect that Gusto will withhold and pay an employee's home state taxes instead. Learn more about reciprocity and courtesy withholdings [here](https://support.gusto.com/article/101365481100000/Reciprocal-agreements-and-courtesy-withholding)
+> .
+
+```json
+[
+  {
+    "uuid": "56260b3d-c375-415c-b77a-75d99f717193",
+    "employee_uuid": "7087a288-8349-4632-b92e-bc94fb79f29e",
+    "street_1": "644 Fay Vista",
+    "street_2": "Suite 842",
+    "city": "Richmond",
+    "state": "VA",
+    "zip": "23218",
+    "country": "USA",
+    "active": false,
+    "effective_date": "2021-01-01",
+    "courtesy_withholding": true
+  },
+  {
+    "uuid": "d9f74049-8769-4fba-8e0f-eceef2da4e6b",
+    "employee_uuid": "7087a288-8349-4632-b92e-bc94fb79f29e",
+    "street_1": "100 5th Ave",
+    "street_2": "Suite 555",
+    "city": "New York",
+    "state": "NY",
+    "zip": "10001",
+    "country": "USA",
+    "active": true,
+    "effective_date": "2022-03-03",
+    "courtesy_withholding": true
+  }
+]
+```
+
+### Create an Employee’s Home Address
+
+Use the [Create an employee’s home address](/embedded-payroll/reference/post-v1-employees-employee_id-home_addresses)
+ endpoint to create a new home address for an employee. The path param for creating a new employee home address is `employee_id` and you are able to set the `effective_date` before, during, or after the current effective date range. It cannot be the same as an existing home address `effective_date`.
+
+```curl
+curl --request POST  
+     --url <https://api.gusto-demo.com/v1/employees/{employee_id}/{home_addresses}>  
+     --header 'accept: application/json'  
+     --header 'authorization: Bearer access_token'  
+     --header 'content-type: application/json'  
+     --data '  
+{  
+  "street_1": "300 3rd Street",  
+  "city": "San Francisco",  
+  "state": "CA",  
+  "zip": "94107",  
+  "effective_date": "2023-05-15",  
+  "courtesy_withholding": false  
+}  
+'
+
+```
+
+### Update an Employee’s Home Address
+
+Use the [Update an employee’s home address](/embedded-payroll/reference/put-v1-home_addresses-home_address_uuid)
+ endpoint to update an employee’s home address. The path param for updating an employee’s home address is `home_address_uuid` and the correct version is required in the body. This endpoint allows you to update any attribute except `uuid`, `version`, `employee_uuid`, `active`, and `country`. You cannot update the effective date of the earliest home address.
+
+```curl
+curl --request PUT  
+     --url <https://api.gusto-demo.com/v1/home_addresses/{home_address_uuid}>  
+     --header 'accept: application/json'  
+     --header 'authorization: Bearer access_token'  
+     --header 'content-type: application/json'  
+     --data '  
+{  
+  "version": "fe75bd065ff48b91c35fe8ff842f986c",  
+  "street_1": "300 3rd Street",  
+  "city": "San Francisco",  
+  "state": "CA",  
+  "zip": "94107",  
+  "effective_date": "2023-06-01",  
+  "courtesy_withholding": true  
+}  
+'
+
+```
+
+### Delete an Employee’s Home Address
+
+Use the [Delete an employee’s home address](/embedded-payroll/reference/delete-v1-home_addresses-home_address_uuid)
+ endpoint to delete an employee’s home address. An employee’s active home address cannot be deleted so you’ll need to designate another home address to be active first. The path param for deleting an employee’s home address is `home_address_uuid`.
+
+```curl
+curl --request DELETE  
+     --url <https://api.gusto-demo.com/v1/home_addresses/{home_address_uuid}>  
+     --header 'accept: application/json'  
+     --header 'authorization: Bearer access_token'
+
+```
+
+### Get an Employee’s Work Addresses
+
+The work address of an employee will determine a company’s state tax liability. Use the [Get an employee’s work addresses](/embedded-payroll/reference/get-v1-employees-employee_id-work_addresses)
+ endpoint to retrieve all employee work addresses in effective date order. The address with the status `"active": true,` is the employee’s current active work address. The `effective_date` signifies when the employee began working at this location.
+
+```json
+[
+  {
+    "uuid": "fc5b87dc-8d88-400d-b2da-c3587a7e5b15",
+    "employee_uuid": "7597f3e3-31d4-4953-83a5-f95be78d2fe2",
+    "company_location_uuid": "d9456c94-f561-40d2-afec-919da5f59196",
+    "effective_date": "2022-01-01",
+    "active": false,
+    "version": "139f9769a2e543e6a1259173e1ee3b8d",
+    "street_1": "800 Adolfo Gardens",
+    "street_2": "Suite 419",
+    "city": "Bremen",
+    "state": "AL",
+    "zip": "35033",
+    "country": "USA"
+  },
+  {
+    "uuid": "be1c2e24-af86-4c36-b34e-3a55dbcdbdab",
+    "employee_uuid": "7597f3e3-31d4-4953-83a5-f95be78d2fe2",
+    "company_location_uuid": "6a119be7-b4b0-4e27-aaa0-89d5f2524635",
+    "effective_date": "2023-01-01",
+    "active": true,
+    "version": "bbe8d4c741339c6b9e0e2e1c1b120816",
+    "street_1": "2216 Icie Villages",
+    "street_2": "Apt. 798",
+    "city": "Big Delta",
+    "state": "AK",
+    "zip": "99737",
+    "country": "USA"
+  }
+]
+```
+
+### Create an Employee’s Work Address
+
+In order to create an employee’s work address, the address must first exist at the company level. Use the [Get company locations](/embedded-payroll/reference/get-v1-companies-company_id-locations)
+ endpoint to determine if the company address is available. If the address has not yet been added, use the [Create a company location](/embedded-payroll/reference/post-v1-companies-company_id-locations)
+ endpoint to create the new company location.
+
+```curl
+curl --request POST  
+     --url <https://api.gusto-demo.com/v1/companies/{company_id}/locations>  
+     --header 'accept: application/json'  
+     --header 'authorization: Bearer access_token'  
+     --header 'content-type: application/json'  
+     --data '  
+{  
+  "country": "USA",  
+  "phone_number": "8009360383",  
+  "street_1": "425 2nd Street",  
+  "city": "San Francisco",  
+  "state": "CA",  
+  "zip": "94107"  
+}  
+'
+
+```
+
+After the address has been created at the company level, use the [Create an employee work address](/embedded-payroll/reference/post-v1-employees-employee_id-work_addresses)
+ endpoint to assign an employee to the new work address. The path param for creating a new employee work address is `employee_id` and the request body params are `location_uuid` from the company location and `effective_date`.
+
+```curl
+curl --request POST  
+     --url <https://api.gusto-demo.com/v1/employees/{employee_id}/work_addresses>  
+     --header 'accept: application/json'  
+     --header 'authorization: Bearer access_token'  
+     --header 'content-type: application/json'  
+     --data '  
+{  
+  "location_uuid": "04552eb9-7829-4b18-ae96-6983552948df",  
+  "effective_date": "2023-06-15"  
+}  
+'
+
+```
+
+### Update an Employee’s Work Address
+
+Use the [Update an employee work address](/embedded-payroll/reference/put-v1-work_addresses-work_address_uuid)
+ endpoint to update an employee’s work address. The path param for updating an employee’s work address is `work_address_uuid` and the correct version is required in the body. The only updatable attributes are `effective_date` and `location_uuid`.
+
+```curl
+curl --request PUT  
+     --url <https://api.gusto-demo.com/v1/work_addresses/{work_address_uuid}>  
+     --header 'accept: application/json'  
+     --header 'authorization: Bearer access_token'  
+     --header 'content-type: application/json'  
+     --data '  
+{  
+  "location_uuid": "04552eb9-7829-4b18-ae96-6983552948df",  
+  "effective_date": "2023-06-20",  
+  "version": "e6db1baa29d3df1eb307ff6a12c778da"  
+}  
+'
+
+```
+
+### Delete an Employee’s Work Address
+
+Use the [Delete an employee work address](/embedded-payroll/reference/delete-v1-work_addresses-work_address_uuid)
+ endpoint to delete an employee’s work address. An employee’s active work address cannot be deleted so you’ll need to designate another work address to be active first. The path param for deleting an employee’s work address is `work_address_uuid`.
+
+```curl
+curl --request DELETE  
+     --url <https://api.gusto-demo.com/v1/work_addresses/{work_address_uuid}>  
+     --header 'accept: application/json'  
+     --header 'authorization: Bearer access_token'
+
+```
+
