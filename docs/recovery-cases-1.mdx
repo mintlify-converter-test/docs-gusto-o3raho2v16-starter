@@ -1,0 +1,133 @@
+---
+title: "Payroll Processing Speed & Bank Failure Impact"
+description: "Impact of payroll processing speed on bank failures and steps to take for handling bank errors with Gusto."
+---
+The selected payroll processing speed almost always determines whether a bank failure will lead to exposure for the company. When we receive a qualifying bank error that results in Gusto missing the funds, here is what to expect:
+
+*   We will create a [notification](https://docs.gusto.com/embedded-payroll/docs/partner-notifications)
+     explaining the bank error received.
+    *   If we receive an R01 error (insufficient funds) we will automatically re-attempt the debit within the next business day. If the second attempt is successful, no further action is required.
+*   For any other bank error, or if the automatic re-debit attempt is unsuccessful, we will not attempt to re-debit until action is taken. Instead, a [recovery case](https://docs.gusto.com/embedded-payroll/reference/get-recovery-cases)
+     will be created to ensure Gusto is able to collect the funds.
+*   Payroll will be blocked until the recovery case is resolved.
+    *   Note: The company may be ineligible for faster payroll speeds depending on the number of bank errors incurred, as well as how long it takes to recoup the outstanding funds.
+
+> ## 📘Recovery Case Definition
+> 
+> A recovery case is used to track any outstanding balance from a defaulted payment debit for any given company. Once a recovery case is created, it is the responsibility of the partner to make sure the client has resolved the issue with the bank and to initiate the redebit within 90 days. After 90 days, the liability will be transferred to the partner.
+
+## Get all recovery cases for a company
+
+To retrieve a list of all outstanding failed debits for a specific company, use the `GET companies/{company_uuid}/recovery_cases`[endpoint](https://docs.gusto.com/embedded-payroll/reference/get-recovery-cases)
+
+```curl
+curl --request GET \
+     --url https://api.gusto-demo.com/v1/companies/company_uuid/recovery_cases \
+     --header 'accept: application/json'
+
+``````curl
+const fetch = require('node-fetch');
+
+const url = 'https://api.gusto-demo.com/v1/companies/{company_uuid}/external_payrolls/tax_liabilities/finish';
+const options = {method: 'PUT', headers: {authorization: 'Bearer COMPANY_API_TOKEN'}};
+
+fetch(url, options)
+  .then(res => res.json())
+  .then(json => console.log(json))
+  .catch(err => console.error('error:' + err));
+
+```
+
+```json
+[
+  {
+    "uuid": "7d83fc01-32bc-4d6c-8118-7c943f002721",
+    "company_uuid": "d2c252c0-131a-474d-9319-c2949fc36685",
+    "status": "open",
+    "latest_error_code": "R01",
+    "original_debit_date": "2023-09-25",
+    "check_date": "2023-09-29",
+    "payroll_uuid": "11d30d29-de60-4a70-a5cd-34f75588e00a",
+    "contractor_payment_uuids": null,
+    "amount_outstanding": "30741.58",
+    "event_total_amount": "30741.58"
+  }
+]
+```
+
+#### Response Fields
+
+A list of the important response fields and definitions are attached below:
+
+*   `latest_error_code`: This indicates the exact ACH error code that was sent from the company bank account. This error code may be updated if there is a second bank error after the first redebit attempt.
+*   `original_debit_date`: This is the date the debit was created, which will be useful if the company needs to work with their bank. Note this will always be 1-3 business days prior to the check date.
+*   `check_date`: This date is used to connect the debit to the corresponding payment. This will not be known by the bank, but is useful for company bookkeeping.
+*   `payroll_uuid`: This is the UUID that can be linked to the failed payroll. Much like the check date, it is useful in linking the debit back to the actual payroll. This will be null if contractor\_payment\_uuids are populated.
+*   `contractor_payment_uuids`: Will display an array of any outstanding contractor payment failures. This will be null if payroll\_uuid is populated.
+*   `amount_outstanding`: The amount of money currently outstanding. Can be equal or less than the event\_total\_amount.
+*   `event_total_amount`: The total debit amount of the corresponding payment event that failed. Payrolls have multiple debits for net pay and taxes, so it is possible for one debit to clear and the other to fail.
+
+#### It is important to consider how to surface this notification with your customer since it will block payroll.
+
+*   We recommend integrating with our Embedded partner notification system and notifying the appropriate recipients of the bank error so they can address it as soon as possible. These critical notifications should be surfaced in the main UI of your application.
+
+> ## 📘Recovery Case example
+> 
+> Below, find an example of how the recovery case is surfaced via [flows](https://docs.gusto.com/embedded-payroll/docs/flows-intro)
+> , and the [partner notification](https://docs.gusto.com/embedded-payroll/docs/partner-notifications)
+>  that is created as a result of the recovery case.
+> 
+> <img className="block" src="images/files_readme_io/_0556c1b_image.png" alt="" />
+> 
+> <img className="block" src="images/files_readme_io/_9523739_image.png" alt="" />
+> 
+> Once the payment has been resubmitted, the recovery case status will update:
+> 
+> <img className="block" src="images/files_readme_io/_aa8d78d_image.png" alt="" />
+
+## Initiate a redebit for a recovery case
+
+When it comes to initiating a redebit, there are two options with varying levels of involvement from your team:
+
+1.  **Recommended** - Utilize the pre-built flow to allow your customer to initiate the re-debit once they have corrected the bank issue. This means the case can be addressed without support intervention, minimizing the impact on your team.
+2.  **Alternative** - Manually initiate the re-debit using the `PUT recovery_cases/{recovery_case_uuid}/redebit`[endpoint](https://docs.gusto.com/embedded-payroll/reference/redebit-recovery-case)
+     endpoint once you have confirmed with the customer that the bank issue has been resolved. A sample request can be seen below.
+    1.  This action will return a `202` response if successful, and the debit will be re-initiated within the next business day.
+
+```curl
+curl --request PUT \
+     --url https://api.gusto-demo.com/v1/recovery_cases/recovery_case_uuid/redebit \
+     --header 'accept: application/json'
+
+``````curl
+const fetch = require('node-fetch');
+
+const url = 'https://api.gusto-demo.com/v1/companies/{company_uuid}/external_payrolls/tax_liabilities/finish';
+const options = {method: 'PUT', headers: {authorization: 'Bearer COMPANY_API_TOKEN'}};
+
+fetch(url, options)
+  .then(res => res.json())
+  .then(json => console.log(json))
+  .catch(err => console.error('error:' + err));
+
+```
+
+#### What happens next?
+
+It may take up to four business days for the redebit to process. If the re-debit is successful, the recovery case is ‘resolved.’ A [notification event](https://docs.gusto.com/embedded-payroll/reference/notification-events)
+ marking the issue as resolved will be created. We recommend sending that notification via some external manner to provide closure to the end user.
+
+If the re-debit is unsuccessful, we will update the status of latest\_error\_code within the recovery case to keep you informed of the newest error.
+
+> ## 📘Faster payroll eligibility
+> 
+> | Faster Payment Suspension Policy | Probation Period | Details/Comments |
+> | --- | --- | --- |
+> | Customers failing for the very 1st time ever (i.e. 1st failure in the company’s history) & was able to return funds to Gusto within 8 days since the debit failure occurred | None | Customers will not be suspended from faster payment automatically but Gusto can still take action to manually remove access at the Partner’s request. |
+> | Customers failing for the very 1st time but took more than 8 days to return funds to Gusto after the debit failure has occurred | 180 days | The customer needs to run at least 1 successful payment per month for the duration of the probation period |
+> | Customers with multiple failures within a 2 year period will experience extended probations. | 180 - 365 days | The customer needs to run at least 1 successful payment per month for the duration of the probation period |
+> 
+> _These policies are subject to change per Gusto’s discretion_
+> 
+> A company is afforded five bank errors. If that threshold is met, the company may be subject to removal from our platform. Please be cognizant of this limit when triggering the re-debit.
+
