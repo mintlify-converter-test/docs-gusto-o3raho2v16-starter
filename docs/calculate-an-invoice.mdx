@@ -1,0 +1,130 @@
+---
+title: "Embedded Payroll Pricing and Invoicing"
+description: "Guide to pricing, packaging, and invoicing for payroll partners"
+---
+As an Embedded Payroll Partner you can determine how you would like to price and package your payroll product, however Gusto invoices Partners on a monthly cadence based on the number of active employees and contractors for a given company. This guide will help you determine if a company should be included in the invoice and what that amount should be based on the number of active employees and contractors.
+
+### Get a Company
+
+Invoicing begins when a company has processed their first payroll. A company can either be active or suspended. Use the [Get a company](/embedded-payroll/reference/get-v1-companies)
+ endpoint to determine if the company `"is_suspended": true/false` . If `"is_suspended": false` the company is active and should be factored into the monthly invoice. A company that is active for any period of time in a month will be invoiced so Partners should periodically check the company's status using the [Get a company](/embedded-payroll/reference/get-v1-companies)
+ endpoint for `"is_suspended": false → true`
+
+```json
+{
+  "ein": "00-0000001",
+  "entity_type": "C-Corporation",
+  "tier": "core",
+  "is_suspended": false,
+  "company_status": "Approved",
+  "uuid": "c7a07c73-a703-4462-9343-1b181182b6e0",
+  "name": "Shoppe Studios LLC",
+  "trade_name": "Record Shoppe",
+  "is_partner_managed": false
+}
+```
+
+### Get Employees of a Company
+
+After determining a company is active, you’ll need to establish the number of active employees for that company. Each active employee is counted towards a company’s monthly invoice, even if an employee is not paid in that month. **Rationale**: Gusto still has to do taxes and filings for the employer/employee in those cycles, even if the employee is not paid.
+
+Use the [Get employees of a company](/embedded-payroll/reference/get-v1-companies-company_id-employees)
+ endpoint to understand which employees are associated to a given company as well as their active status. If the employee's `hire_date` is in the past and their status is`"terminated": false` the employee is active and should be factored into the monthly invoice. If an employee is active at any point in the month, even if they aren't included on payroll, they will be factored into the invoice since Gusto is required to submit taxes and filings for the employer/employee, even if that amount is '0'.
+
+```json
+[
+  {
+    "uuid": "9779767c-6044-48e0-bf68-aeb370b9a2e7",
+    "first_name": "Nicole",
+    "middle_initial": "M",
+    "last_name": "Boehm",
+    "email": "kory7757869450111548@barton-hermiston.io",
+    "company_uuid": "c44d66dc-c41b-4a60-9e25-5e93ff8583f2",
+    "manager_uuid": "5e53e257-c8d6-45aa-aa8a-ec99283a3acd",
+    "version": "414dedaca594b77135e0b8d2f398516d",
+    "department": "Stage Hand",
+    "department_uuid": "1802465d-4f68-4865-920c-1307ab095f12",
+    "terminated": false,
+    "two_percent_shareholder": false,
+    "onboarded": true,
+    "jobs": [
+      {
+        "uuid": "5d5e3ce5-ea8f-4885-90e5-7ebaed03f7c5",
+        "version": "91179081a7309c9fbd31bb3cf7b9893e",
+        "employee_uuid": "a987bce1-6d06-43f8-9978-9db886f479fb",
+        "current_compensation_uuid": "798a962f-0fcf-491e-9b71-cfa6a1db114f",
+        "payment_unit": "Hour",
+        "primary": true,
+        "title": "Client Support Manager",
+        "compensations": [
+          {
+            "uuid": "94f17a77-cfe5-436a-af94-422bbf8248ff",
+            "version": "233f0096a8015e62d9795fadf1fd300d",
+            "payment_unit": "Hour",
+            "flsa_status": "Nonexempt",
+            "job_uuid": "64711ac0-83ff-4aaf-bec1-db72f5a44e56",
+            "effective_date": "2021-01-20",
+            "rate": "22.00",
+            "adjust_for_minimum_wage": false,
+            "minimum_wages": []
+          }
+        ],
+        "rate": "22.00",
+        "hire_date": "2020-01-20"
+      }
+    ]
+
+```\
+\
+### Get contractor payments for a company\
+\
+For contractors, this process differs: **you are only charged for contractors in the month that a payment is made for those contractors.**\
+\
+Use the [Get contractor payments](/embedded-payroll/reference/get-v1-companies-company_id-contractor_payments)\
+ for a company endpoint to determine which contractors were paid in a given month. Each `contractor_uuid` should be factored into the monthly invoice. You can include `start_date` and `end_date` query params to only show contractor payments for a given month.\
+\
+```json
+{  
+  "total": {  
+    "reimbursements": "string",  
+    "wages": "string"  
+  },  
+  "contractor_payments": [  
+    {  
+      "contractor_uuid": 0,  
+      "reimbursement_total": "string",  
+      "wage_total": "string",  
+      "payments": [  
+        {  
+          "uuid": "string",  
+          "contractor_uuid": "string",  
+          "bonus": "string",  
+          "date": "string",  
+          "hours": "string",  
+          "payment_method": "Direct Deposit",  
+          "reimbursement": "string",  
+          "status": "Funded",  
+          "hourly_rate": "string",  
+          "may_cancel": true,  
+          "wage": "string",  
+          "wage_type": "Hourly",  
+          "wage_total": "string"  
+        }  
+      ]  
+    }  
+  ]  
+}
+
+```\
+\
+### Calculate the Total Invoice Amount\
+\
+Once you have determined the number of active employees and number of contractors paid in a month for an active company, you can add these values together to determine the total monthly invoice.\
+\
+*   **Equation**: **Company base amount** + **Number of active employees** + **Number of paid contractors** = **Total monthly invoice**\
+\
+Did this page help you?\
+\
+Yes\
+\
+No
