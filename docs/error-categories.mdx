@@ -1,0 +1,299 @@
+---
+title: "Error Categories"
+description: "List of error categories for integrations"
+---
+The following error samples provide a comprehensive list of all error categories we currently support. You may use the category to programmatically handle errors in your integration.
+
+### deprecated\_endpoint
+
+```json
+404 Not Found
+
+{
+  "errors": [
+    {
+      "error_key": "request",
+      "category": "deprecated_endpoint",
+      "message": "The requested endpoint is no longer supported in the requested API version."
+    }
+  ]
+}
+
+```
+
+### duplicate\_operation
+
+```json
+422 Unprocessable Entity
+
+{
+  "errors": [
+    {
+      "error_key": "base",
+      "category": "duplicate_operation",
+      "message": "Cannot have multiple of the same state field per company"
+    }
+  ]
+}
+
+```
+
+### internal\_error
+
+If an internal error occurs, our engineers are notified to investigate the problem.
+
+```json
+500 Internal Server Error
+
+{
+  "errors": [
+    {
+      "error_key": "request",
+      "category": "internal_error",
+      "message": "An unexpected error has occurred."
+    }
+  ]
+}
+
+```
+
+### invalid\_api\_version
+
+To learn more about API Versions review our [API Versioning guide](/embedded-payroll/docs/api-versioning)
+.
+
+```json
+406 Not Acceptable
+
+{
+  "errors": [
+    {
+      "error_key": "request",
+      "category": "invalid_api_version",
+      "message": "Invalid API Version `2023`. Expected format: YYYY-MM-DD"\
+    }\
+  ]
+}
+
+```
+
+### invalid\_application\_setup
+
+```json
+422 Unprocessable Entity
+
+{
+  "errors": [
+    {
+      "error_key": "request",
+      "category": "invalid_application_setup",
+      "message": "You must create an application to continue."
+    }
+  ]
+}
+
+```
+
+### invalid\_attribute\_value
+
+```json
+422 Unprocessable Entity
+
+{
+  "errors": [
+    {
+      "error_key": "fast_payment_limit",
+      "category": "invalid_attribute_value",
+      "message": "Fast payment limit should be a number"
+    }
+  ]
+}
+
+```
+
+### invalid\_operation
+
+```json
+422 Unprocessable Entity
+
+{
+  "errors": [
+    {
+      "error_key": "base",
+      "category": "invalid_operation",
+      "message": "Bank account cannot be verified. Please check the test deposit amounts."
+    }
+  ]
+}
+
+```
+
+### invalid\_parameter
+
+```json
+422 Unprocessable Entity
+
+{
+  "errors": [
+    {
+      "error_key": "benefit_id",
+      "category": "invalid_parameter",
+      "message": "Parameter `benefit_id` is deprecated in this API version. Please use `benefit_type`"\
+    }\
+  ]
+}
+
+```
+
+### invalid\_resource\_version
+
+```json
+409 Conflict
+
+{
+  "errors": [
+    {
+      "error_key": "base",
+      "category": "invalid_resource_version",
+      "message": "You are attempting to update a resource using an out-of-date version."
+    }
+  ]
+}
+
+```
+
+### missing\_oauth\_scopes
+
+```json
+403 Forbidden
+
+{
+  "errors": [
+    {
+      "error_key": "request",
+      "category": "missing_oauth_scopes",
+      "message": "You do not have the necessary OAuth scopes for this request. Please reach out to developer@gusto.com for assistance."
+    }
+  ]
+}
+
+```
+
+### missing\_parameter
+
+```json
+422 Unprocessable Entity
+
+{
+  "errors": [
+    {
+      "error_key": "base",
+      "category": "missing_parameter",
+      "message": "benefit_type is required."
+    }
+  ]
+}
+
+```
+
+### missing\_permissions
+
+```json
+403 Forbidden
+
+{
+  "errors": [
+    {
+      "error_key": "request",
+      "category": "missing_permissions",
+      "message": "This endpoint is part of Gusto Embedded. Please contact developer@gusto.com if you’d like to have more information and use it for production. Note, this may require you to enter a different agreement with Gusto."
+    }
+  ]
+}
+
+```
+
+### nested\_errors
+
+```json
+422 Unprocessable Entity
+
+{
+  "errors": [
+    {
+      "error_key": "fields",
+      "category": "nested_errors",
+      "errors": [
+        {
+          "error_key": "signature",
+          "category": "invalid_attribute_value",
+          "message": "Field is required."
+        }
+      ]
+    }
+  ]
+}
+
+```
+
+### not\_found
+
+```json
+404 Not Found
+
+{
+  "errors": [
+    {
+      "error_key": "request",
+      "category": "not_found",
+      "message": "This endpoint does not exist on this version of the Gusto API."
+    }
+  ]
+}
+
+```
+
+### payroll\_blocker
+
+To see a list of all possible `payroll_blocker`s review the [Payroll Blockers guide](/embedded-payroll/docs/payroll-blockers)
+.
+
+```json
+422 Unprocessable Entity
+
+{
+  "errors": [
+    {
+      "error_key": "base",
+      "category": "payroll_blocker",
+      "message": "Company or employee address could not be verified. Please ensure all addresses are valid.",
+      "metadata": {
+        "key": "geocode_error"
+      }
+    }
+  ]
+}
+
+```
+
+### rate\_limit\_exceeded
+
+To learn more about our rate limits review the [Rate Limits guide](/embedded-payroll/docs/rate-limits)
+.
+
+```json
+429 Too Many Requests
+
+{
+  "errors": [
+    {
+      "error_key": "base",
+      "category": "rate_limit_exceeded",
+      "message": "Rate limit exceeded. Please wait a bit before trying again."
+    }
+  ]
+}
+
+
+```
+
