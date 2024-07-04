@@ -1,0 +1,292 @@
+---
+title: "Historical Payrolls"
+description: "Capture previous payrolls during Company Onboarding for accurate year-to-date filings"
+---
+Historical payrolls are used for companies who transfer from one payroll provider to your payroll product after the start of a year. It's important to capture their previous payrolls during Company Onboarding to ensure year to date filings are accurate.
+
+The video below walks through the Gusto Flows first to give you a visual for each of the steps outlined below. The tutorial for the APIs starts around the 2 minute mark.
+
+An employer will need to gather all paystubs for every employee who was paid in the current calendar year. For previous quarters in this calendar year, the employer should gather quarterly payroll summaries for each employee and use these to enter quarter-to-date ("QTD") information to simplify this step (1 payroll per calendar quarter). These summaries should include any benefits, reimbursements, or exemptions for their employees.
+
+Before creating a historical payroll, an employee must be [onboarded](/embedded-payroll/docs/onboard-a-w2-employee)
+ and State Tax Setup must be complete.
+
+> ## 📘Check date vs. Pay period
+> 
+> There is a difference between a check date and the pay period:
+> 
+> *   The **check date** is the date the employee was paid. This date determines your payroll tax liability and will be the date you’ll enter when reporting previous payrolls.
+> *   The **pay period** is the period of time during which the wages were earned. The pay period is defined by a `payment_period_start_date` and `payment_period_end_date`.
+> 
+> _For example, if an employee worked from December 15th to December 31st and was paid on January 15th, the pay period is the December 15th - 31st and the check date is January 15th._
+
+## 1\. Create an External Payroll
+
+```curl
+curl --request POST \
+     --url https://api.gusto-demo.com/v1/companies/{company_uuid}/external_payrolls \
+     --header 'accept: application/json' \
+     --header 'authorization: Bearer COMPANY_API_TOKEN' \
+     --header 'content-type: application/json' \
+     --data '
+{
+     "check_date": "2022-06-01",
+     "payment_period_start_date": "2022-05-15",
+     "payment_period_end_date": "2022-05-30"
+}
+'
+
+``````curl
+const fetch = require('node-fetch');
+
+const url = 'https://api.gusto-demo.com/v1/companies/{company_uuid}/external_payrolls';
+const options = {
+  method: 'POST',
+  headers: {
+    accept: 'application/json',
+    'content-type': 'application/json',
+    authorization: 'Bearer COMPANY_API_TOKEN'
+  },
+  body: JSON.stringify({
+    check_date: '2022-06-01',
+    payment_period_start_date: '2022-05-15',
+    payment_period_end_date: '2022-05-30'
+  })
+};
+
+fetch(url, options)
+  .then(res => res.json())
+  .then(json => console.log(json))
+  .catch(err => console.error('error:' + err));
+
+```
+
+Use the `POST v1/companies/{company_uuid}/external_payrolls` [endpoint](post-v1-external-payroll)
+ to create the initial shell of the payroll. The response will include a `uuid` which is the external\_payroll\_uuid.
+
+## 2\. Update the External Payroll
+
+To be able to update the external payroll, you will need to have the earnings, benefits, and taxes ids. To retrieve these, use the `GET companies/{company_uuid}/external_payrolls/{external_payroll_uuid}` [endpoint](/embedded-payroll/reference/get-v1-external-payroll)
+.
+
+You can update the external payroll for multiple employees using the `PUT companies/{company_uuid}/external_payrolls/{external_payroll_uuid}` [endpoint](/embedded-payroll/reference/put-v1-external-payroll)
+. If you would like to `PATCH` updates you can set the `replace_fields` value in the endpoint to `true`.
+
+```curl
+curl --request PUT \
+     --url https://api.gusto-demo.com/v1/companies/{company_uuid}/external_payrolls/{external_payroll_uuid} \
+     --header 'accept: application/json' \
+     --header 'authorization: Bearer COMPANY_API_TOKEN' \
+     --header 'content-type: application/json' \
+     --data '
+{
+     "replace_fields": false,
+     "external_payroll_items": [\
+          {\
+               "employee_uuid": "403c6ee3-5f58-40ef-a117-ff7175cd9ee3",\
+               "earnings": [\
+                    {\
+                         "hours": "0.0",\
+                         "amount": "200.00",\
+                         "earning_type": "CompanyPayType",\
+                         "earning_id": 1\
+                    },\
+                    {\
+                         "hours": "0.0",\
+                         "amount": "5000.00",\
+                         "earning_type": "CompanyEarningType",\
+                         "earning_id": 2\
+                    }\
+               ],\
+               "benefits": [\
+                    {\
+                         "company_contribution_amount": "300.0",\
+                         "employee_deduction_amount": "300.0",\
+                         "benefit_id": 10\
+                    },\
+                    {\
+                         "company_contribution_amount": "50.0",\
+                         "employee_deduction_amount": "100.0",\
+                         "benefit_id": 21\
+                    }\
+               ],\
+               "taxes": [\
+                    {\
+                         "amount": "20.0",\
+                         "tax_id": 1\
+                    },\
+                    {\
+                         "amount": "100.0",\
+                         "tax_id": 2\
+                    }\
+               ]\
+          }\
+     ]
+}
+'
+
+``````curl
+const fetch = require('node-fetch');
+
+const url = 'https://api.gusto-demo.com/v1/companies/{company_uuid}/external_payrolls/{external_payroll_uuid}';
+const options = {
+  method: 'PUT',
+  headers: {
+    accept: 'application/json',
+    'content-type': 'application/json',
+    authorization: 'Bearer COMPANY_API_TOKEN'
+  },
+  body: JSON.stringify({
+    replace_fields: true,
+    external_payroll_items: [\
+      {\
+        employee_uuid: '403c6ee3-5f58-40ef-a117-ff7175cd9ee3',\
+        earnings: [\
+          {hours: '0.0', amount: '200.00', earning_type: 'CompanyPayType', earning_id: 1},\
+          {\
+            hours: '0.0',\
+            amount: '5000.00',\
+            earning_type: 'CompanyEarningType',\
+            earning_id: 2\
+          }\
+        ],\
+        benefits: [\
+          {\
+            company_contribution_amount: '300.0',\
+            employee_deduction_amount: '300.0',\
+            benefit_id: 10\
+          },\
+          {\
+            company_contribution_amount: '50.0',\
+            employee_deduction_amount: '100.0',\
+            benefit_id: 21\
+          }\
+        ],\
+        taxes: [{amount: '20.0', tax_id: 1}, {amount: '100.0', tax_id: 2}]\
+      }\
+    ]
+  })
+};
+
+fetch(url, options)
+  .then(res => res.json())
+  .then(json => console.log(json))
+  .catch(err => console.error('error:' + err));
+
+```
+
+**Repeat the steps above to allow an Employer to create and update as many external payrolls as necessary to record all year to date information for their company.** A company may have several external payrolls to enter or they may only have one. It will vary by company and time of year so your application should be designed to support this.
+
+Once earnings and/or benefits information has been saved, you can optionally calculate applicable taxes using the `GET companies/{company_uuid}/external_payrolls/{external_payroll_id}/calculate_taxes` [endpoint](/embedded-payroll/reference/get-v1-external-payroll-calculate-taxes)
+ . Note that this will return _suggested_ tax amounts. The calculation is just our guidance.
+
+If you decide to use these suggested tax amounts, you can use these amounts to validate the entries provided by the end user and/or override any taxes entered. You can update the external payroll with these suggested amounts using the `PUT companies/{company_uuid}/external_payrolls/{external_payroll_uuid}` [endpoint](/embedded-payroll/reference/put-v1-external-payroll)
+.
+
+## 3\. Update Tax Liabilities
+
+Once earnings, benefits and taxes have been entered for all external payrolls and employees, you can retrieve tax liabilities from aggregate external payrolls for a company using `GET v1/companies/{company_uuid}/external_payrolls/tax_liabilities` [endpoint](/embedded-payroll/reference/get-v1-tax-liabilities)
+.
+
+You may change these selections using the same endpoint until you finalize your tax liabilities in step 4. Be sure to update tax liabilities selection to avoid extra tax debit in your account.
+
+The tax liabilities amount is a sum of previous + current liabilities. If multiple payrolls have been added in the previous steps, the taxes from each payroll will compound on each other in order of most recent payroll to least recent. _For example, if the first external added had $5 in Federal Income Tax and the second external had $7, the total will be $12._
+
+> ## 📘
+> 
+> If an Employer indicates there are no taxes outstanding ($0.00) for all taxes, Gusto will report all tax amounts as having been paid to the agency. We will still report the total wages (for all payrolls for the year - both outside of Gusto plus amounts paid by Gusto), and all the taxes owed for the year (for all payrolls outside of Gusto and tax amounts for payrolls processed by Gusto), but we won't debit or pay the taxes again for historical payrolls.
+> 
+> Use `PUT v1/companies/{company_uuid}/external_payrolls/tax_liabilities` to update tax liabilities accordingly in this scenario.
+
+## 4\. Finalize Tax Liabilities
+
+Given the sensitive nature of this information, it is important the Employer reviews the information before completing this step. To finalize the tax liabilities use the `PUT companies/{company_uuid}/external_payrolls/tax_liabilities/finish` [endpoint](/embedded-payroll/reference/put-v1-tax-liabilities-finish)
+.
+
+```curl
+curl --request PUT \
+     --url https://api.gusto-demo.com/v1/companies/{company_uuid}/external_payrolls/tax_liabilities/finish \
+     --header 'authorization: Bearer COMPANY_API_TOKEN'
+
+``````curl
+const fetch = require('node-fetch');
+
+const url = 'https://api.gusto-demo.com/v1/companies/{company_uuid}/external_payrolls/tax_liabilities/finish';
+const options = {method: 'PUT', headers: {authorization: 'Bearer COMPANY_API_TOKEN'}};
+
+fetch(url, options)
+  .then(res => res.json())
+  .then(json => console.log(json))
+  .catch(err => console.error('error:' + err));
+
+```
+
+This call will convert all the external payrolls into processed payrolls and the external payrolls can no longer be edited. These payrolls will be factored into the company's tax forms (941 or 944) and the employees' W-2s.
+
+```curl
+curl --request GET \
+     --url https://api.gusto-demo.com/v1/companies/company_uuid/external_payrolls \
+     --header 'accept: application/json'
+
+``````curl
+const fetch = require('node-fetch');
+
+const url = 'https://api.gusto-demo.com/v1/companies/{company_uuid}/external_payrolls/tax_liabilities/finish';
+const options = {method: 'PUT', headers: {authorization: 'Bearer COMPANY_API_TOKEN'}};
+
+fetch(url, options)
+  .then(res => res.json())
+  .then(json => console.log(json))
+  .catch(err => console.error('error:' + err));
+
+```
+
+> ## 📘External Payrolls - Processing Time
+> 
+> **Note:** Submitting this request starts an async process which should take less than 2 minutes to complete. Once completed, the status for external payroll(s) will change from "unprocessed" to "processed".
+
+An example response is attached below:
+
+```json
+{
+  "uuid": "c5fdae57-5483-4529-9aae-f0edceed92d4",
+  "company_uuid": "bcb305b0-2855-4025-8d22-e484a9e6b7c9",
+  "check_date": "2022-06-03",
+  "payment_period_start_date": "2022-05-15",
+  "payment_period_end_date": "2022-05-30",
+  "status": "processed"
+}
+```
+
+Alternatively, if you are subscribed to [Payroll webhooks](/embedded-payroll/docs/payroll-events)
+ events, you will receive a [payrolls.processed](/embedded-payroll/docs/payroll-events)
+ event and fetching the subsequent payroll will contain an `external: true` attribute for each external payroll that gets processed.
+
+```json
+{
+  "version": "19289df18e6e20f797de4a585ea5a91535c7ddf7",
+  "payroll_deadline": "2022-02-18T22:00:00Z",
+  "check_date": "2021-02-22",
+  "external": true,
+  "processed": true,
+  "processed_date": "2021-02-16",
+  "calculated_at": null,
+  "payroll_uuid": "b50e611d-8f3d-4f24-b001-46675f7b5777",
+  "company_uuid": "6bf7807c-a5a0-4f4d-b2e7-3fbb4b2299fb",
+  "pay_period": {
+    "start_date": "2021-02-01",
+    "end_date": "2021-02-15",
+    "pay_schedule_uuid": "00ebc4a4-ec88-4435-8f45-c505bb63e501"
+  }
+}
+```
+
+> ## 📘Delete an external payroll
+> 
+> External payrolls can be [deleted](https://docs.gusto.com/embedded-payroll/reference/delete-v1-external-payroll)
+>  if the tax liabilities have not been finalized yet.
+> 
+> If an external is deleted, tax liability amounts will likely change. Be sure to update the tax liabilities selections again after an external is deleted to retrieve the most recent and accurate amounts.
+> 
+> **Once finalized, the external payroll(s) cannot be changed. To correct an external payroll, please contact Support.**
+
