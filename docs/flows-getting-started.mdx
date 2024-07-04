@@ -1,0 +1,71 @@
+---
+title: "How To Use Flows"
+description: "Guide on hosting and generating flows for applications"
+---
+## How To Use Flows
+
+Flows can be hosted in a new tab or i-framed into your application. Flows are generated using the `POST companies/{company_uuid}/flows` [endpoint](/embedded-payroll/reference/post-v1-company-flows)
+.
+
+> ## 📘
+> 
+> For security purposes, all generated flows will expire within 1 hour of inactivity. Additionally, flows will be deactivated 24 hours from creation time, however you can regenerate the flows at any time to resume onboarding by calling the same endpoint.
+
+```curl
+curl --request POST \
+  --url https://api.gusto-demo.com/v1/companies/{{company_uuid}}/flows \
+  --header 'Authorization: Bearer COMPANY_ACCESS_TOKEN’' \
+  --header 'Content-Type: application/json' \
+  --data '{
+  "flow_type": "employee_form_signing",
+  “entity_type”: “Employee”,
+  “entity_uuid”: “{{employee_uuid}}”
+}'
+
+``````curl
+const fetch = require('node-fetch');
+
+const url = 'https://api.gusto-demo.com/v1/companies/{company_uuid}/flows';
+const options = {
+  method: 'POST',
+  headers: {
+    accept: 'application/json',
+    'content-type': 'application/json',
+    authorization: 'Bearer COMPANY_API_TOKEN'
+  },
+  body: JSON.stringify({
+    flow_type: 'employee_form_signing',
+    entity_type: 'Employee',
+    entity_uuid: '{{employee_uuid}}'
+  })
+};
+
+fetch(url, options)
+  .then(res => res.json())
+  .then(json => console.log(json))
+  .catch(err => console.error('error:' + err));
+
+```
+
+Flows are built on top of the Gusto Embedded APIs. As a user progresses through a flow, data will be sent and saved to Gusto’s database each time the user clicks “Save & continue”. If a Flow times out or a user closes the Flow and returns to it later, the Flow will regenerate with any saved data.
+
+## Mix and Match
+
+Flows can be used on their own or in conjunction with our APIs if you already have UI to collect payroll pertinent information. For example, if you already collect company addresses and employee information, you can pass this information via API and use specific modular Flows to capture the remaining information needed to complete onboarding. Using this hybrid approach, you only need to surface screens that are absolutely necessary to the end-customer.
+
+You can also mix and match `flow_types` in the same category to create custom flows suitable for your needs. To view the categories for flows review the [Flow Types](/embedded-payroll/docs/flow-types)
+ guide. You can also rearrange the `flow_types` in any order you see fit.
+
+> ## 📘Data Dependencies
+> 
+> Please be mindful of data dependencies in each step to achieve the best user experience
+
+To create a custom onboarding flow that only includes `add_addresses`, `add_employees`, and `sign_all_forms` steps, use a comma delimited string.
+
+```json
+{  
+	flow_type: "add_addresses,add_employees,sign_all_forms"  
+}
+
+```
+
