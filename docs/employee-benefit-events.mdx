@@ -1,0 +1,27 @@
+---
+title: "Employee Benefit Webhooks"
+description: "List of subscribed events for EmployeeBenefit"
+---
+When subscribed to the `EmployeeBenefit` webhooks you will receive the following events:
+
+| event\_type | description |
+| --- | --- |
+| employee\_benefit.created | Employee benefit has been created |
+| employee\_benefit.updated | Employee benefit has been updated |
+| employee\_benefit.deleted | Employee benefit has been deleted |
+
+### Example payload
+
+```json
+{
+  "entity_id": 19,
+  "timestamp": 1673566564,
+  "event_type": "employee_benefit.created",
+  "entity_type": "EmployeeBenefit",
+  "entity_uuid": "30b33760-bd09-401b-bb49-fc833483304e",
+  "resource_id": 14,
+  "resource_type": "Company",
+  "resource_uuid": "463db27c-4ac5-4403-b7f3-d5fb962b051d"
+}
+```
+
