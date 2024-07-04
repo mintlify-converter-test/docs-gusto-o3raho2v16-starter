@@ -1,0 +1,32 @@
+---
+title: "Company Webhooks Events"
+description: "Events received when subscribed to Company webhooks"
+---
+When subscribed to the `Company` webhooks you will receive the following events:
+
+| event\_type | description |
+| --- | --- |
+| company.updated | Company has been updated |
+| company.provisioned | Administrator has been granted access to the company |
+| company.partner\_authorized |     |
+| company.approved | Company has been [approved](/embedded-payroll/docs/complete-onboarding) |
+| company.onboarded | Company has been [onboarded](/embedded-payroll/docs/embedded-payroll-onboarding) |
+
+### Example payload
+
+```json
+{
+  "event_type": "company.provisioned",
+  "resource_type": "Company",
+  "resource_id": 7756341741171842,
+  "resource_uuid": "5df911a0-e8e9-412d-8aaf-a46ad193dd96",
+  "entity_type": "Company",
+  "entity_id": 7756341741171842,
+  "entity_uuid": "5df911a0-e8e9-412d-8aaf-a46ad193dd96",
+  "timestamp": 1671058841,
+}
+
+```
+
+In the case of Company Events, the `resource_type`, `resource_id`, and `resource_uuid`, match the `entity_type`, `entity_id`, and `entity_uuid`.
+
