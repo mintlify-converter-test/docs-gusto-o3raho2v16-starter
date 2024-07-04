@@ -1,0 +1,89 @@
+---
+title: "What is an ACH Transaction?"
+description: "Overview of ACH transactions in payroll processing by Gusto"
+---
+## What is an ACH Transaction?
+
+As a payroll processor, Gusto uses the Automated Clearing House (ACH) network to debit from a company’s bank account, deposit into an employee or contractor’s bank account, and remit payroll taxes to external tax agencies (both state and federal). Whenever an ACH transaction occurs, Gusto will create an internal record which captures the transaction details (ex: payment event type, error code, credit / debit, payment date, etc.).
+
+> ## 📘National Automated Clearing House Association (NACHA)
+> 
+> The National Automated Clearing House Association (NACHA) is the governing body overseeing electronic money movement via ACH within the US.
+
+## Pulling ACH Transactions for a Company
+
+This `GET companies/{company_uuid}/ach_transactions`[endpoint](/embedded-payroll/reference/get-ach-transactions)
+is useful to gain visibility into the flow of funds within ACH transactions on a per company basis, both successful and unsuccessful (the latter of which result in bank errors). Partners may use this endpoint to track granular bank ACH transaction data as it pertains to the movement of money, to whom the money was transferred, and when those funds were moved.
+
+The following call will fetch all ACH transactions for a specific company:
+
+```curl
+curl --request GET \
+     --url https://api.gusto-demo.com/v1/companies/company_uuid/ach_transactions \
+     --header 'accept: application/json'
+
+``````curl
+const fetch = require('node-fetch');
+
+const url = 'https://api.gusto-demo.com/v1/companies/{company_uuid}/external_payrolls/tax_liabilities/finish';
+const options = {method: 'PUT', headers: {authorization: 'Bearer COMPANY_API_TOKEN'}};
+
+fetch(url, options)
+  .then(res => res.json())
+  .then(json => console.log(json))
+  .catch(err => console.error('error:' + err));
+
+```
+
+### Query Parameters
+
+Optional parameters can be added to requests in order to help filter for specific company ACH transactions (ex: “transaction\_type”: “Debit net pay,”).
+
+| Query Parameters | Definition |
+| --- | --- |
+| contractor\_payment\_uuid | The UUID of the contractor payment. |
+| payroll\_uuid | The UUID of the payroll. |
+| transaction\_type | Used to filter the ACH transactions to only include those with a specific transaction type, such as "Credit employee pay". [Click here](/embedded-payroll/docs/ach-codes-and-transaction-types) for a full list of transaction types. |
+| payment\_direction | Used to filter the ACH transactions to only include those with a specific payment direction, either "credit" or "debit". Credit = outgoing money from Gusto (ex. Refund to customer, employee payment, tax payment to tax agency). Debit = incoming money to Gusto (ex. Customer funding payroll) |
+
+### Response
+
+An example response is attached below:
+
+```json
+[
+  {
+    "uuid": "123e4567-e89b-12d3-a456-426655440000,",
+    "company_uuid": "456e7890-e12b-34c5-d678-901234567890,",
+    "payment_event_type": "Payroll,",
+    "payment_event_uuid": "789e0123-e45f-67ab-c890-123456789012,",
+    "recipient_type": "Employee,",
+    "recipient_uuid": "012e3456-f78d-90ab-12cd-345678901234,",
+    "error_code": "null,",
+    "transaction_type": "Credit employee pay,",
+    "payment_status": "submitted,",
+    "payment_direction": "credit,",
+    "payment_event_check_date": "2023-10-02,",
+    "payment_date": "2023-10-17,",
+    "amount": "123.00,",
+    "description": "PAY 380654"
+  }
+]
+```
+
+### Response Fields - Descriptions
+
+A full list of response fields and values are attached below:
+
+| Response Field | Description |
+| --- | --- |
+| transaction\_type | ACH transaction type; [Click here](/embedded-payroll/docs/ach-codes-and-transaction-types) for a full list of values. |
+| payment\_event\_type | Provides further segmentation whenever payments are made. Returned values include `Payroll, ContractorPayment, nil`  **Note:** Nil values returned may represent Gusto's payment to external tax agencies on behalf of employers |
+| recipient\_type | Dictates the recipient of the transaction. Returned values include `Employee, Contractor, nil`  **Note:** Nil values returned may represent external tax agencies, Gusto, or a company bank account |
+| error\_code | Error codes help troubleshoot the payment issue or failure and help the partner identify / resolve the issue. More information regarding bank errors can be [found here](/embedded-payroll/docs/bank-errors) and a full list of ACH Return Codes can be [found here](/embedded-payroll/docs/ach-codes-and-transaction-types). |
+| payment\_status | Status of the ACH transaction.  **Unsubmitted** = Pending submission to bank  **Failed** = Payment has failed due to some “R-code” bank error  **Successful** \= The payment has been settled with the bank and is now successful. A “C-code” bank error may or may not be present.  **Submitted** = The payment has been submitted to the bank. |
+| payment\_direction | Shows the direction funds are flowing.  **Debit** \= Funds leaving Company or Employee's bank account  **Credit** \= Funds coming into Company or Employee's bank account |
+| payment\_event\_check\_date | `check_date` of the corresponding payment event (payroll or contractor payment). This is the date on which the recipient would see the transaction in their bank account. |
+| payment\_date | Date on which the funds "clear" or are considered "good". Per NACHA Operating Rules, the Receiving Depository Financial Institution (RDFI) has 2 business days from receipt to notify the Originating Depository Financial Institution (ODFI) of any returns via bank error codes. |
+| description | See [Manage company bank account details (Bank transactions and code glossary section)](https://support.gusto.com/article/106622315100000/Manage-company-bank-account-details). Some responses (but not all) will include this as some RDFIs surface this info to their account holders. |
+
