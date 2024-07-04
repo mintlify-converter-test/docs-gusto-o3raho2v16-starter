@@ -1,0 +1,90 @@
+---
+title: "Payroll System Overview"
+description: "API simplifies payroll complexities"
+---
+Payroll is complex, but the API is designed to shield as much complexity as possible from the end user, without sacrificing functionality. This section breaks down the Gusto system:
+
+### Companies and Employees
+
+Companies are a collection of one to hundreds of employees. Employee data, on the payroll side, is relatively static. Compensation information, addresses, and tax information changes rather infrequently once set.
+
+[To onboard a company](/embedded-payroll/docs/onboard-a-company)
+ for payroll, key inputs include company details (e.g. name, EIN), location, bank accounts, and other information.
+
+[To onboard a W2 Employee](/embedded-payroll/docs/onboard-a-w2-employee)
+, key inputs include employee details (e.g. name, addresses), pay rates (salaried or hourly), benefits deductions, tax withholding, and so on. Once set up, these change rather infrequently.
+
+Companies may have multiple work [locations](/embedded-payroll/docs/locations)
+ (potentially across multiple states), and desire for all employees to be paid at the same time or on different pay schedules, depending on work location or compensation type.
+
+<img className="block" src="https://files.readme.io/3c340c6-Employees.png "Employees.png"" alt="1420" />
+
+## Payroll
+
+Regular payrolls are tied to a specific pay period and all associated information - paid time off (vacation, sick, holiday, custom policies), hours worked, bonuses, commissions, etc. - should be applied to that time range. In a regular payroll, the Company payroll admin sets the pay schedule (e.g. monthly, bi-monthly) and the start date. From there, each payroll is associated with a specific pay period with a start and end date, to make sure there are no overlapping dates.
+
+**Pay periods are the foundation of payroll.** Compensation, time and attendance, taxes, and expense reports all rely on when they happened. These are the combination of a company, a subset of its employees, and a time range. Not every employee at a company will be a part of every payroll. Pay periods have a `start_date` and an `end_date`.
+
+The majority of payrolls are run regularly (following the set pay schedule), while some are run [off-cycle](/embedded-payroll/docs/create-an-off-cycle-payroll)
+ to take care of one-off events such as [corrections](https://support.gusto.com/article/999908231000000/Off-cycle-payrolls)
+. Off-cycle payrolls default to using the same withholding rates, deductions, and contributions made in regular payrolls, simply unattached to the predetermined pay period.
+
+## Employee Pay and Employer Cost
+
+**Gross pay** is the amount of money employees receive before any taxes and deductions are taken out.
+
+An employee can be salaried or hourly, and also receive additional earnings throughout their employment. We refer to these earnings as `compensations`. Salaries and wages calculated by the hour are referred to as `hourly_compensations`. Gusto will calculate the regular hours for a salaried employee in the `hourly_compensations` array based on the pay schedule whereas these will be empty for Hourly employees because these are typically tracked on a per pay period basis and entered by the employer when running payroll. Additional earnings such as bonuses, commissions, and tips are `fixed_compensations`.
+
+Use the `flsa_status` in [compensation](/embedded-payroll/reference/get-v1-compensations-compensation_id)
+ to set or determine if an employee is hourly or salaried.
+
+<img className="block" src="https://files.readme.io/628f36a-Employee_Pay.png "Employee Pay.png"" alt="" />
+
+Employee pre-tax deductions such as health insurance are subtracted from gross pay. Then, federal, state and local taxes are calculated, depending on where the employee worked. After taxes are calculated, post-tax deductions such as garnishments are subtracted and reimbursable expenses are added. Net pay is what the employee takes home, after the voluntary and/or mandatory deductions and taxes are subtracted, and can be received via ACH direct deposit or physical check.
+
+With the exception of child support, Gusto does not debit for garnishments on behalf of the user, so the user will be liable to make this payment from their end. For this reason, we do not surface garnishments in the payroll totals (except child support) so you'll need to examine individual employees in the payroll response for `deductions`. These will be separate line items from `benefits` or `employee_benefits_deductions`. _Gusto remits payment for most U.S States except South Carolina, US Territories, and Tribal Support Agency._
+
+<img className="block" src="https://files.readme.io/e2ae483-Employer_Cost.png "Employer Cost.png"" alt="" />
+
+## Movement of Money
+
+Once the payroll admin has reviewed employee pay and employer cost, they can
+
+[submit a payroll](/embedded-payroll/docs/complete-a-regular-payroll)
+. This will trigger the movement of money from the Company’s bank account to the Employees and tax agencies. At this point, it will be nontrivial to cancel payroll.
+
+Today, Gusto supports [2-day payroll](/embedded-payroll/reference/put-v1-company-payment-configs)
+ and the standard 4-day. More information can be found [here](/embedded-payroll/docs/processing-timelines)
+.
+
+Gusto will initiate up to 4 separate debit transactions from a company's bank account after each payroll is submitted:
+
+1.  **Employee pay**(received in direct deposit) - returned as `net_pay_debit` in the ‘totals’ object of the `payrolls` response.
+2.  **Employee reimbursements** - returned as `reimbursement_debit`.
+3.  **Employee and employer payroll taxes** - returned as `tax_debit`.
+4.  **Child support** _(if applicable)_ - returned as `child_support_debit`.
+
+The `company_debit` in the `payrolls` response should be the **total** company debit for the specified payroll (all 4 combined).
+
+_We also support owner’s draws which are a tax free transfer of money from the company to an owner. These wages are not subject to payroll tax filing and deposits, but are instead taxed on the individual level with annual tax returns. Typically owners of Sole Proprietorships and LLCs may choose to use this type of payment. These types of payments are returned in `owners_draw`._
+
+## Pay Schedules
+
+A pay schedule is a combination of the following two items:
+
+1.  A pay period - The date range for which work is actually completed by the employees.
+2.  A check date - When the employees receive payment.
+
+Determined by the employer, the pay schedule provides a regular cadence for tracking work and allows employees to plan their own finances around when they will receive payment.
+
+**ACH processing timeline**: ACH (automated clearing house) is the national standard for transferring money through US banking. It is important to note that there is a delay between when a payroll is submitted and when the employees will be paid in accordance with that standard.
+
+*   **Four business day rule** - The designated processing time is four business days. This means that payroll must be submitted four business days prior to the check date in order to ensure employees are paid on time.
+*   **Expedited two business day rule** \- Gusto offers expedited payroll to qualifying companies which allows them to submit payroll only two business days prior to the check date in order to ensure employees are paid on time.
+
+**Bank Holidays**: Since the ACH processing timeline is calculated off business days, we must also make sure to consider bank holidays since funds won’t move on those days. Any time a bank holiday falls within the two or four day processing window, payroll must be submitted one business day earlier.
+
+**Gusto’s internal cutoff time**: Gusto’s requires that payroll be submitted by 4 pm PST each business day in order to begin processing that day, which allows us time to actually process all payrolls on our platform. If payroll is submitted after that deadline, it will not be initiated until the following business day, which will push the check date back one business day.
+
+**Arrears vs non-arrears**: Arrears simply means there is a delay between the check date and the end of the pay period. This most typically applies to employers with hourly employees, allowing a buffer to obtain hours worked before submitting the payroll. Non-arrears means the employees are paid on or before the end of the pay period, which most typically applies to salaried employees since payroll will need to be submitted prior to the end of the pay period, in accordance with the ACH standards.
+
