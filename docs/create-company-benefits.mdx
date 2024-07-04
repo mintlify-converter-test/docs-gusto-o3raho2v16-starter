@@ -1,0 +1,171 @@
+---
+title: "Supported Benefits"
+description: "Gusto supports 32 different types of external benefits."
+---
+Before using this guide you must have a company created. You can learn more by following the [Onboard a Company guide](/embedded-payroll/docs/onboard-a-company)
+.
+
+## 1\. Get Supported Benefits
+
+Gusto currently supports 32 different types of external benefits.
+
+To get a list of all supported benefits, use the `GET v1/benefits` [endpoint](/embedded-payroll/reference/get-v1-benefits)
+. The endpoint will return an array of Company Benefit objects, each object returned exists in the following form:
+
+```json
+{
+  "id": 1,
+  "name": "Medical Insurance",
+  "description": "Deductions and contributions for Medical Insurance",
+  "pretax": true,
+  "posttax": false,
+  "imputed": false,
+  "healthcare": true,
+  "retirement": false,
+  "yearly_limit": false,
+  "category": "Health"
+}
+```
+
+> ## 📘
+> 
+> The benefit object in Gusto contains high level information about a particular benefit type and its tax considerations. When companies choose to offer a benefit, they are creating a Company Benefit object associated with a particular benefit.
+
+## 2\. Create a Company Benefit
+
+Using the `id` of the benefit you want to add from Step 1, you can now create the Company Benefit. The `POST /companies/{company_uuid}/company_benefits` [endpoint](/embedded-payroll/reference/post-v1-companies-company_id-company_benefits)
+ also requires a `description` which is a more specific description than the given one of the Benefit. An example may be “Kaiser Permanente” or “Blue Cross/ Blue Shield”.
+
+```curl
+curl --request POST \
+     --url https://api.gusto-demo.com/v1/companies/{company_uuid}/company_benefits \
+     --header 'accept: application/json' \
+     --header 'authorization: Bearer COMPANY_API_TOKEN' \
+     --header 'content-type: application/json' \
+     --data '
+{
+     "active": true,
+     "benefit_id": 1,
+     "description": "Blue Cross/ Blue Shield",
+     "responsible_for_employer_taxes": false,
+     "responsible_for_employee_w2": false
+}
+'
+
+``````curl
+const fetch = require('node-fetch');
+
+const url = 'https://api.gusto-demo.com/v1/companies/{company_uuid}/company_benefits';
+const options = {
+  method: 'POST',
+  headers: {
+    accept: 'application/json',
+    'content-type': 'application/json',
+    authorization: 'Bearer COMPANY_API_TOKEN'
+  },
+  body: JSON.stringify({
+    active: true,
+    benefit_id: 1,
+    description: 'Blue Cross/ Blue Shield',
+    responsible_for_employer_taxes: false,
+    responsible_for_employee_w2: false
+  })
+};
+
+fetch(url, options)
+  .then(res => res.json())
+  .then(json => console.log(json))
+  .catch(err => console.error('error:' + err));
+
+```
+
+## 3\. (Optional) Confirm Benefit Creation
+
+You can always see what benefits a specific company has by using the `GET /companies/{company_uuid}/company_benefits` [endpoint](/embedded-payroll/reference/get-v1-companies-company_id-company_benefits)
+.
+
+```curl
+curl --request GET \
+     --url 'https://api.gusto-demo.com/v1/companies/{company_uuid}/company_benefits?enrollment_count=true' \
+     --header 'accept: application/json' \
+     --header 'authorization: Bearer COMPANY_API_TOKEN'
+
+``````curl
+const fetch = require('node-fetch');
+
+const url = 'https://api.gusto-demo.com/v1/companies/{company_uuid}/company_benefits?enrollment_count=true';
+const options = {
+  method: 'GET',
+  headers: {accept: 'application/json', authorization: 'Bearer COMPANY_API_TOKEN'}
+};
+
+fetch(url, options)
+  .then(res => res.json())
+  .then(json => console.log(json))
+  .catch(err => console.error('error:' + err));
+
+```
+
+## 4\. Add Benefits to Employee
+
+Once you have create the benefit at the company level, you can now give that benefit to an employee.
+
+### a. Create Employee Benefit
+
+To give an employee a company benefit, you need to create the benefit at the employee level using the `POST employees/{employee_uuid}/employee_benefits` [endpoint](/embedded-payroll/reference/post-v1-employees-employee_id-employee_benefits)
+.
+
+When creating the benefit you will specify both the company contribution AND/OR the employee deduction amount. There are also several additional constraints and detail that can be passed depending on the benefit.
+
+```curl
+curl --request POST \
+     --url https://api.gusto-demo.com/v1/employees/{employee_uuid}/employee_benefits \
+     --header 'accept: application/json' \
+     --header 'authorization: Bearer COMPANY_API_TOKEN' \
+     --header 'content-type: application/json' \
+     --data '
+{
+     "active": true,
+     "employee_deduction": "100.00",
+     "deduct_as_percentage": false,
+     "contribution": {
+          "type": "amount",
+          "value": "100.00"
+     },
+     "elective": false,
+     "catch_up": false,
+     "coverage_salary_multiplier": "0.00",
+     "company_benefit_uuid": "f68abb42-431e-4392-bc3f-2795627e00f3"
+}
+'
+
+``````curl
+const fetch = require('node-fetch');
+
+const url = 'https://api.gusto-demo.com/v1/employees/{employee_uuid}/employee_benefits';
+const options = {
+  method: 'POST',
+  headers: {
+    accept: 'application/json',
+    'content-type': 'application/json',
+    authorization: 'Bearer COMPANY_API_TOKEN'
+  },
+  body: JSON.stringify({
+    active: true,
+    employee_deduction: '100.00',
+    deduct_as_percentage: false,
+    contribution: {type: 'amount', value: '100.00'},
+    elective: false,
+    catch_up: false,
+    coverage_salary_multiplier: '0.00',
+    company_benefit_uuid: 'f68abb42-431e-4392-bc3f-2795627e00f3'
+  })
+};
+
+fetch(url, options)
+  .then(res => res.json())
+  .then(json => console.log(json))
+  .catch(err => console.error('error:' + err));
+
+```
+
