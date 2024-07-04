@@ -1,0 +1,106 @@
+---
+title: "Payroll Payment Configurations"
+description: "Overview of next-day, 2-day, and 4-day payroll options"
+---
+Today, Gusto Embedded supports next-day payroll, 2-day payroll and the standard 4-day. You can configure these using the [Update a company's payment configs](/embedded-payroll/reference/put-v1-company-payment-configs)
+ endpoint. With next-day payments, you can process payroll up to one business day in advance of the check date. With 2-day payments, you can process payroll up to two business days in advance of the check date.
+
+> ## 📘Next-day payments
+> 
+> For next-day payments, funds are deposited in your team's bank account by the end of the next business day. Most people—depending on their bank—will see the funds arrive the next afternoon, but payments may arrive as late as the end of the business day. For more information on payment speeds, check out our [Help Center](https://support.gusto.com/article/999752211000000/Direct-deposit-payment-speeds)
+> .
+> 
+> Next-day payroll is available with approval from the Gusto Embedded team. Reach out to your dedicated Implementation Team if interested.
+
+Next-day payroll timeline example:
+
+*   **Thursday**: Run payroll by 4pm PT.
+*   **Thursday**: Funds debited from the company's bank account. Funds are processing.
+*   **Friday**: Funds are deposited in an employee's bank account(s) if paid via direct deposit, usually in the morning.
+
+2-day payroll timeline example:
+
+*   **Wednesday**: Run payroll by 4pm PT.
+*   **Wednesday**: Funds debited from the company's bank account. Funds are processing.
+*   **Friday**: Funds are deposited in an employee's bank account(s) if paid via direct deposit, usually in the morning.
+
+With 4-day payroll, you have to process payments four business days in advance of the check date:
+
+*   **Monday**: Run payroll by 4pm PT. Funds debited from the company's bank account. Funds are processing.
+*   **Tuesday–Thursday**: Funds are processing. Company debit is successful or unsuccessful by Thursday.
+*   **Friday**: If Company debit was successful, funds are deposited in an employee's bank account(s) if paid via direct deposit, usually in the morning.
+
+<img className="block" src="images/files_readme_io/_a4b8312_payroll_fundamentals.jpg" alt="" />
+
+## Embedded Processing Timelines
+
+When a new [Partner Managed Company](/embedded-payroll/reference/post-v1-partner-managed-companies)
+is created, it will be created with a 2-day ACH processing speed by default (for employees only, all contractor payments remain on 4-day ACH).
+
+This means:
+
+*   Gusto is initiating the transfer of funds from Gusto to the employee before we have confirmed a cleared debit from the company bank account
+*   Should a payroll debit fail on a 2-day processing speed, the company will go into collections until Gusto has received the funds for the failed debit. **If this collection is not fulfilled by the company, the liability is transferred to you (after 90 days)**
+*   You can set an aggregated threshold where a payroll would be pushed from 2 day to 4 day.
+    *   Aggregated meaning within 24 hours the sum of all payrolls can not exceed that threshold to remain on 2 day
+    *   If a payroll was on 2-day and moved to 4-day as a result of a payment threshold being hit the user must cancel the payroll and you must adjust the threshold and re-process the payroll
+
+_Should you decide that you want to default to 4-day ACH for all new customers and mitigate the risk for 2-day errors or collections, please contact your Implementation Team._
+
+## Next-day vs 2-day vs 4-day
+
+Customer profiles and risk tolerance varies across businesses and industries. Gusto Embedded supports multiple payment speeds to provide our Partners with the flexibility to offer the best solutions to their end users.
+
+> ## 📘Onboarded companies will default to a 2-day ACH timeline for W2 employee payments
+> 
+> Should you decide that you want to default all customers to 4 day ACH and mitigate the risk for 2 day errors or collections, contact us.
+
+### Suggestions to consider for your Payroll product’s processing speed:
+
+*   Provide a guided in-app experience on payment speed for your end users to help educate them on the implications and tradeoffs.
+*   Encourage Users to setup using [Plaid](/embedded-payroll/docs/onboard-a-company#6-add-company-bank-account-and-verify-account)
+    *   In addition to speeding up the company onboarding process, Plaid provides insight to a customer's last cached bank balance. Leverage that endpoint to review and adjust thresholds.
+*   Incorporate fast payroll limits using the `fast_payment_limit`. This will cause all aggregate payrolls in a 24 hour period that exceed the limit to automatically be pushed from next-day or 2-day to 4-day.
+    *   As an Embedded Partner, once you are on the hook for the funds you should evaluate and decide the level of risk you would like to take on in a 24 hour period for a given client.
+    *   **Suggestion**: Allow customers to request temporary or permanent increases to their next-day or 2-day limit via communication with your support team.
+*   Review Pay Schedules - more frequent pay schedules mean lower payroll amounts. Incorporate this information into your next-day or 2-day configuration.
+
+## Update a Company's Processing Configuration
+
+You can update a company's payroll processing using the `PUT companies/{company_uuid}/payment_configs` [endpoint](/embedded-payroll/reference/put-v1-company-payment-configs)
+.
+
+```curl
+curl --request PUT \
+     --url https://api.gusto-demo.com/v1/companies/{company_uuid}/payment_configs \
+     --header 'accept: application/json' \
+     --header 'authorization: Bearer COMPANY_API_TOKEN' \
+     --header 'content-type: application/json' \
+     --data '
+{
+     "fast_payment_limit": 5000,
+     "payment_speed": "4-day"
+}
+'
+
+``````curl
+const fetch = require('node-fetch');
+
+const url = 'https://api.gusto-demo.com/v1/companies/{company_uuid}/payment_configs';
+const options = {
+  method: 'PUT',
+  headers: {
+    accept: 'application/json',
+    'content-type': 'application/json',
+    authorization: 'Bearer COMPANY_API_TOKEN'
+  },
+  body: JSON.stringify({fast_payment_limit: 5000, payment_speed: '4-day'})
+};
+
+fetch(url, options)
+  .then(res => res.json())
+  .then(json => console.log(json))
+  .catch(err => console.error('error:' + err));
+
+```
+
