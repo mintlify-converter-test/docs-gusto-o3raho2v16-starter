@@ -1,0 +1,27 @@
+---
+title: "CompanyBenefit Webhooks"
+description: "Events and example payload for CompanyBenefit webhooks"
+---
+When subscribed to the `CompanyBenefit` webhooks you will receive the following events:
+
+| event\_type | description |
+| --- | --- |
+| company\_benefit.created | Company benefit has been created |
+| company\_benefit.updated | Company benefit has been updated |
+| company\_benefit.deleted | Contractor has been deleted |
+
+### Example payload
+
+```json
+{
+  "entity_id": 6,
+  "timestamp": 1673566539,
+  "event_type": "company_benefit.created",
+  "entity_type": "CompanyBenefit",
+  "entity_uuid": "b50b2db9-5154-4d76-98b0-70cb6be52cbe",
+  "resource_id": 14,
+  "resource_type": "Company",
+  "resource_uuid": "463db27c-4ac5-4403-b7f3-d5fb962b051d"
+}
+```
+
