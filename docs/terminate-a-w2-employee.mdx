@@ -1,0 +1,143 @@
+---
+title: "Terminations"
+description: "Guide for scheduling and processing employee terminations using Gusto"
+---
+Terminations are created when an employee is scheduled to leave the company. Gusto provides the capability to support terminated employees and offers different options for employers to run their last paychecks using the Gusto Termination Flow or the API.
+
+> ## 📘
+> 
+> Make sure employees are paid on time by looking at the [state’s requirement guide](https://support.gusto.com/article/178508731100000/Dismissal-paycheck-requirements-by-state)
+> . Some states require employees to receive their final wages within 24 hours (unless they consent otherwise) in which case running a one-off payroll may be the only option.
+
+## Termination Flow
+
+To get started, generate an employee termination flow via API call to our Flows [endpoint](/embedded-payroll/reference/post-v1-company-flows)
+.
+
+```curl
+curl --request POST \
+     --url https://api.gusto-demo.com/v1/companies/{{company_uuid}}/flows \
+     --header 'Authorization: Bearer {{access_token}}’' \
+     --header 'Content-Type: application/json' \
+     --data '
+{
+     "flow_type": "terminations",
+     "entity_type": "Employee",
+     "entity_uuid": "{{employee_uuid}}"
+}'
+
+``````curl
+const fetch = require('node-fetch');
+
+const url = 'https://api.gusto-demo.com/v1/employees/{{employee_uuid}}/terminations';
+const options = {
+  method: 'POST',
+  headers: {
+    accept: 'application/json',
+    'content-type': 'application/json',
+    authorization: 'Bearer COMPANY_API_TOKEN'
+  },
+  body: JSON.stringify({run_termination_payroll: true, effective_date: '2022-01-01'})
+};
+
+fetch(url, options)
+  .then(res => res.json())
+  .then(json => console.log(json))
+  .catch(err => console.error('error:' + err));
+
+```
+
+### 1\. Enter employee termination details
+
+<img className="block" src="images/files_readme_io/_94e278d_Screenshot_2023_03_02_at_3.15.27_PM.png" alt="" />
+
+The last day of employment is the employee’s effective dismissal date. The date can be in the past or the future and a scheduled effective date takes effect at 12am PT. Note the following requirements:
+
+*   If the last day of employment is in the past, the date must be after the last non-zero regular pay period's start date. For example, if Katlyn had a regular payroll for $2000 for 11/1-11/15 and $0 for 11/15-11/30, then we cannot accept a termination date preceding 11/1.
+*   The employee must have a hire date.
+
+There are 3 ways to run the final paycheck:
+
+*   **Dismissal payroll**: This is the most guided option, as it makes some automatic assumptions around pay period and other parameters.
+*   **Regular payroll**: This allows the employer to opt to take care of final payment as part of the regular payroll process. This essentially defers payroll action until later.
+*   **Another way**: This allows the employer to run an off-cycle payroll on the next page. Employers should also select this option if they intend on managing final payment outside of your application (though they will still need to record an external payroll to ensure accuracy of tax reporting).
+
+> ## 📘Dismissal vs off-cycle payroll
+> 
+> Dismissal payrolls:
+> 
+> *   Determine the pay period using the employee’s last regular pay period as the start date and termination date as the end date
+> *   Will make a default PTO payout recommendation based on your dismissed employee's assigned PTO policy
+> 
+> Off-cycle payrolls:
+> 
+> *   Require employers to manually enter the employee’s work period and check date
+> *   Require employers to specify PTO hours payout manually
+> *   Offer the flexibility to decide whether to continue on the same contribution and deduction within the period
+
+### 2\. Review termination summary
+
+<img className="block" src="images/files_readme_io/_8f55ba4_Screenshot_2023_03_02_at_3.16.11_PM.png" alt="" />
+
+Once the termination form is submitted:
+
+*   Employers cannot edit the effective date if it is in the past
+*   Employers can cancel a dismissal if they selected “Run regular payroll” or “Another way” in the dismissal form, but not if they selected dismissal payroll
+
+### 3\. (Optional) Run dismissal or off-cycle payroll
+
+Once a termination is submitted, an employer admin can continue through the Flow using the "run payroll" button at the bottom right of the summary page, which will reflect the type of payroll chose in Step 1. For information on how the dismissal payroll is calculated, view the [Termination Payroll Flow guide](/embedded-payroll/docs/create-a-termination-payroll-flow)
+.
+
+If someone accidentally selects dismissal payroll as the final paycheck option and doesn't want to run a dismissal payroll, they can skip it using the [Skip a payroll](/embedded-payroll/reference/get-v1-companies-payroll-skip-company_uuid)
+ endpoint, which will help them bypass the requirement that blocks them from changing pay schedules.
+
+Payroll admins can chose to run payroll at a later time by returning to this Flow. Termination and off-cycle payroll are also available as separate Flows for you to make available to employers if needed.
+
+## Termination using the API
+
+To create a termination, use the `POST employees/{employee_uuid}/terminations` [endpoint](post-v1-employees-employee_id-terminations)
+.
+
+```curl
+curl --request POST \
+     --url https://api.gusto-demo.com/v1/employees/{employee_uuid}/terminations \
+     --header 'accept: application/json' \
+     --header 'authorization: Bearer COMPANY_API_TOKEN' \
+     --header 'content-type: application/json' \
+     --data '
+{
+     "run_termination_payroll": true,
+     "effective_date": "2022-01-01"
+}'
+
+``````curl
+const fetch = require('node-fetch');
+
+const url = 'https://api.gusto-demo.com/v1/employees/{{employee_uuid}}/terminations';
+const options = {
+  method: 'POST',
+  headers: {
+    accept: 'application/json',
+    'content-type': 'application/json',
+    authorization: 'Bearer COMPANY_API_TOKEN'
+  },
+  body: JSON.stringify({run_termination_payroll: true, effective_date: '2022-01-01'})
+};
+
+fetch(url, options)
+  .then(res => res.json())
+  .then(json => console.log(json))
+  .catch(err => console.error('error:' + err));
+
+```
+
+If `run_termination_payroll` is set to `true`, the employee should receive their final wages via a termination payroll. To run a termination payroll, follow the [Termination Payroll Flow guide](/embedded-payroll/docs/create-a-termination-payroll-flow)
+. If `false`, they should receive their final wages on their current pay schedule.
+
+## Effect on unprocessed regular payrolls
+
+If you elect to run a dismissal payroll, the employee’s last regular payroll will be swapped into a dismissal payroll with the termination date as the pay period end date.
+
+If you elected Another Way for the final payment method, we will also remove the employee from unprocessed future payrolls.
+
