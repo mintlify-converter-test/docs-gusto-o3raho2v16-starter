@@ -1,0 +1,26 @@
+---
+title: "GeneratedDocument Webhooks"
+description: "Printable Payroll Checks events"
+---
+When subscribed to the `GeneratedDocument` webhooks you will receive the following events:
+
+| event\_type | description |
+| --- | --- |
+| printable\_payroll\_checks.generated\_document.generated | Printable Payroll Checks Generated Document has finished generating |
+| printable\_payroll\_checks.generated\_document.failed | Printable Payroll Checks Generated Document has failed to generate |
+
+### Example payload
+
+```json
+{
+  "event_type": "printable_payroll_checks.generated_document.generated",
+  "resource_type": "Company",
+  "resource_id": 7757616924740529,
+  "resource_uuid": "be695efc-2858-4341-bd7b-528b9ba82877",
+  "entity_type": "GeneratedDocument",
+  "entity_id": 7757491335866020,
+  "entity_uuid": "29dd0def-0d03-4240-84b2-fadb6b9e067b",
+  "timestamp": 1677873248
+}
+```
+
