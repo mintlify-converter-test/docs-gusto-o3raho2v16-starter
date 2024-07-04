@@ -1,0 +1,221 @@
+---
+title: "Onboarding a Contractor"
+description: "Simplified process compared to W2 employees"
+---
+Onboarding a Contractor is similar to onboarding a W2 Employee but requires less information. Jobs and compensations are simplified for contractors since these type of workers are not subject to the same minimum wage laws, tax calculations, and payroll rules.
+
+Contractors may be added during a company’s onboarding for payroll, or at any time after this initial onboarding is complete. A contractor can be setup in one of two ways:
+
+1.  By Employer
+2.  By Contractor (“Self-onboarding”)
+
+Both can be done using Gusto’s pre-built Flows or using the Contractor APIs to build custom UI/UX.
+
+To learn more about the difference between Contractor Onboarding by Employer vs Contractor Self-Onboarding review the [Onboarding Method Comparison Guide](/embedded-payroll/docs/contractor-onboarding-method-comparison)
+.
+
+#### The steps for both of these processes is the same
+
+## 1\. Create a Contractor
+
+You can create an employee using the `POST companies/{company_id}/contractors` [endpoint](/embedded-payroll/reference/post-v1-companies-company_id-contractors)
+.
+
+The example below shows a contractor "self-onboarding".
+
+```curl
+curl --request POST \
+     --url https://api.gusto-demo.com/v1/companies/{company_uuid}/contractors \
+     --header 'accept: application/json' \
+     --header 'authorization: Bearer COMPANY_API_TOKEN' \
+     --header 'content-type: application/json' \
+     --data '
+{
+     "type": "Individual",
+     "self_onboarding": true,
+     "file_new_hire_report": "true",
+     "wage_type": "Fixed",
+     "first_name": "Jenna",
+     "last_name": "Hunterson",
+     "start_date": "2022-03-14",
+     "email": "happinesspie@example.com",
+     "work_state": "GA",
+     "hourly_rate": "40.0"
+}
+'
+
+``````curl
+const fetch = require('node-fetch');
+
+const url = 'https://api.gusto-demo.com/v1/companies/{company_uuid}/contractors';
+const options = {
+  method: 'POST',
+  headers: {
+    accept: 'application/json',
+    'content-type': 'application/json',
+    authorization: 'Bearer COMPANY_API_TOKEN'
+  },
+  body: JSON.stringify({
+    type: 'Individual',
+    self_onboarding: true,
+    file_new_hire_report: 'true,',
+    wage_type: 'Fixed',
+    first_name: 'Jenna',
+    last_name: 'Hunterson',
+    start_date: '2022-03-14',
+    email: 'happinesspie@example.com',
+    work_state: 'GA',
+    hourly_rate: '40.0'
+  })
+};
+
+fetch(url, options)
+  .then(res => res.json())
+  .then(json => console.log(json))
+  .catch(err => console.error('error:' + err));
+
+```
+
+## 2\. Update Contractor's Information
+
+### a. Update a Contractor's Address
+
+To update an contractor's address, you will first need to get the `version` of the address using the `GET contractors/{contractor_uuid}/address` [endpoint](/embedded-payroll/reference/get-v1-contractors-contractor_uuid-address)
+. Once you have the `version` you can update the federal tax details using the `PUT contractors/{contractor_uuid}/address` [endpoint](/embedded-payroll/reference/put-v1-contractors-contractor_uuid-address)
+.
+
+```curl
+curl --request PUT \
+     --url https://api.gusto-demo.com/v1/contractors/{contractor_uuid}/address \
+     --header 'accept: application/json' \
+     --header 'authorization: Bearer COMPANY_API_TOKEN' \
+     --header 'content-type: application/json' \
+     --data '
+{
+     "version": "fe75bd065ff48b91c35fe8ff842f986c",
+     "street_1": "39057 Broderick Light",
+     "street_2": "Apt. 612",
+     "city": "San Francisco",
+     "state": "CA",
+     "zip": "94107"
+}
+'
+
+``````curl
+const fetch = require('node-fetch');
+
+const url = 'https://api.gusto-demo.com/v1/contractors/{contractor_uuid}/address';
+const options = {
+  method: 'PUT',
+  headers: {
+    accept: 'application/json',
+    'content-type': 'application/json',
+    authorization: 'Bearer COMPANY_API_TOKEN'
+  },
+  body: JSON.stringify({
+    version: 'fe75bd065ff48b91c35fe8ff842f986c',
+    street_1: '39057 Broderick Light',
+    street_2: 'Apt. 612',
+    city: 'San Francisco',
+    state: 'CA',
+    zip: '94107'
+  })
+};
+
+fetch(url, options)
+  .then(res => res.json())
+  .then(json => console.log(json))
+  .catch(err => console.error('error:' + err));
+
+```
+
+### b. Create a Contractor Bank Account
+
+Creating a contractor bank account will automatically update an contractor's payment method from `Check` to `Direct Deposit`.
+
+If you want to change the payment method you can use the `PUT contractors/{contractor_uuid}/payment_method` [endpoint](/embedded-payroll/reference/put-v1-contractors-contractor_id-payment_method)
+.
+
+To create a bank account for a Contractor use the `POST contractors/{contractor_uuid}/bank_accounts` [endpoint](/embedded-payroll/reference/post-v1-contractors-contractor_uuid-bank_accounts)
+.  
+_Note: We currently only support one bank account per contractor. Using this endpoint on a contractor who already has a bank account will just replace it._
+
+```curl
+curl --request POST \
+     --url https://api.gusto-demo.com/v1/contractors/{contractor_uuid}/bank_accounts \
+     --header 'accept: application/json' \
+     --header 'authorization: Bearer COMPANY_API_TOKEN' \
+     --header 'content-type: application/json' \
+     --data '
+{
+     "name": "BoA Checking Account",
+     "routing_number": "266905059",
+     "account_number": "5809431207",
+     "account_type": "Checking"
+}
+'
+
+``````curl
+const fetch = require('node-fetch');
+
+const url = 'https://api.gusto-demo.com/v1/contractors/{contractor_uuid}/bank_accounts';
+const options = {
+  method: 'POST',
+  headers: {
+    accept: 'application/json',
+    'content-type': 'application/json',
+    authorization: 'Bearer COMPANY_API_TOKEN'
+  },
+  body: JSON.stringify({
+    name: 'BoA Checking Account',
+    routing_number: '266905059',
+    account_number: '5809431207',
+    account_type: 'Checking'
+  })
+};
+
+fetch(url, options)
+  .then(res => res.json())
+  .then(json => console.log(json))
+  .catch(err => console.error('error:' + err));
+
+```
+
+## 3\. Mark Contractor as Onboarded
+
+With the basic details, address, and payment method complete, the final step is to mark the contractor as `onboarding_completed`. This is done using the `PUT contractors/{contractor_uuid}/onboarding_status` [endpoint](/embedded-payroll/reference/put-v1-contractors-contractor_uuid-onboarding_status)
+. You will want to change the status to `onboarding_completed` in the body.
+
+```curl
+curl --request PUT \
+     --url https://api.gusto-demo.com/v1/contractors/{contractor_uuid}/onboarding_status \
+     --header 'accept: application/json' \
+     --header 'authorization: Bearer COMPANY_API_TOKEN' \
+     --header 'content-type: application/json' \
+     --data '
+{
+     "onboarding_status": "onboarding_completed"
+}
+'
+
+``````curl
+const fetch = require('node-fetch');
+
+const url = 'https://api.gusto-demo.com/v1/contractors/{contractor_uuid}/onboarding_status';
+const options = {
+  method: 'PUT',
+  headers: {
+    accept: 'application/json',
+    'content-type': 'application/json',
+    authorization: 'Bearer COMPANY_API_TOKEN'
+  },
+  body: JSON.stringify({onboarding_status: 'onboarding_completed'})
+};
+
+fetch(url, options)
+  .then(res => res.json())
+  .then(json => console.log(json))
+  .catch(err => console.error('error:' + err));
+
+```
+
