@@ -1,0 +1,49 @@
+---
+title: "Gusto Check PDFs"
+description: "Generate check PDFs and print for employees"
+---
+Gusto's API allows you to generate two types of check PDFs based on an employer’s preference: check at the bottom stock or check at the top stock. Once generated, employers can print the generated checks and provide them to employees.
+
+> ## 📘
+> 
+> Gusto performs payroll calculations and remits taxes for all employees, regardless of their payment method. For employees who are paid via check, employers are expected to pay employees their net pay amount outside of the standard Gusto ACH process.
+
+Printable PDFs are also included in the Gusto Embedded [Run Payroll Flow](/embedded-payroll/docs/flow-types)
+, as well as in the off-cycle and payroll history Flows.
+
+## 1\. Create printable paper check
+
+To create a printable paper check through the Gusto API, use the `POST payroll/{payroll_uuid}/generated_documents/printable_payroll_checks` [endpoint](/embedded-payroll/reference/post-v1-payrolls-payroll_uuid-generated_documents-printable_payroll_checks)
+. The `payroll_uuid` must be the uuid of a _processed_ payroll (i.e. one that has been successfully submitted).
+
+The endpoint accepts the following body params:
+
+*   `printing_format` - either “top” or “bottom” to indicate placement of the recipient's address. Note: “bottom” includes the routing number while “top” does not.
+*   `starting_check_number` - optionally set a starting check number. Note: only available for `printing_format: “bottom”`.
+
+The response will contain the following information:
+
+*   `payroll_uuid`
+*   `printing_format` - top or bottom
+*   `starting_check_number` - nil if `printing_format: “top”` or if not passed
+*   `request_uuid` - to be used in the Step 2
+*   `status` - pending, succeeded, or failed
+
+## 2\. Get printable paper check
+
+To get the generated document, use the `GET /generated_documents/printable_payroll_check/{request_uuid}` [endpoint](/embedded-payroll/reference/get-v1-generated_documents-document_type-request_uuid)
+ using the `request_uuid` returned from Step 1.
+
+The response will contain the following information:
+
+*   `request_uuid`
+*   `report_urls` - an array that is either empty when `status: “pending”`, or contains the URL of the printable check when `status: “succeeded”`
+*   `status` - pending, succeeded, or failed
+
+## 3\. Monitor webhook for approval
+
+Payroll check generation falls under our generated documents category, and is created through an async request. You can subscribe to the GeneratedDocument Entity [webhook](/embedded-payroll/docs/generated-document-events)
+ and listen for the `printable_payroll_checks.generated_document.generated` event to get notified when a payroll check has finished generating.
+
+Alternatively, you can handle this using polling. Once Step 1 is successful, repeat Step 2 every few seconds to verify whether check generation is complete.
+
