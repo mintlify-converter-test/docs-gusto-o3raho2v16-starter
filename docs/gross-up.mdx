@@ -1,0 +1,56 @@
+---
+title: "Gusto Gross Earnings Calculation"
+description: "Calculate gross earnings based on net earnings using Gusto"
+---
+Gusto provides the capability to calculate gross earnings based on net earnings using the off-cycle payroll flow or API. This is primarily used when a payroll admin wishes to pay an employee a specific take-home pay amount, such as in the case of a bonus.
+
+**Gross Earnings**: The amount of money your employees receive before any taxes and deductions are taken out.  
+**Net Earnings**: The amount of money your employees take home after all deductions have been taken out. This is the money they have in their pocket on payday.
+
+## API
+
+To get started, first get the UUID of the unprocessed off-cycle payroll, the employee UUID on the payroll, and the desired net pay for the employee and make the call to the gross up endpoint. This will calculate the gross up earnings needed to give your employee the desired net earnings.
+
+> ## 📘
+> 
+> Note: The resulting gross up amount must then be mapped to the corresponding fixed compensation earning type to get the correct payroll amount. For example, for bonus off-cycles, the gross up amount should be set with the Bonus earning type in the payroll `fixed_compensations` field and for correction off-cycles, the gross up amount should be set with the Correction earning type.
+
+```curl
+curl --request POST \ 
+		 --url https://api.gusto-demo.com/v1/payrolls/{payroll_uuid}/gross_up
+     --header 'accept: application/json' 
+     --header 'authorization: Bearer COMPANY_API_TOKEN' 
+     --header 'content-type: application/json' 
+     --data ' 
+{ 
+  "employee_uuid": "8ec202ea-e896-4186-b6bc-20ef0f3cecf1", 
+  "net_pay": "1000.00"
+} '
+
+```
+
+## Flows
+
+To get started, generate an employee off-cycle payroll flow via API call to our Flows endpoint.
+
+```curl
+curl --request POST 
+     --url https://api.gusto-demo.com/v1/companies/{{company_uuid}}/flows
+     --header 'Authorization: Bearer {{access_token}}’' 
+     --header 'Content-Type: application/json' 
+     --data ' { "flow_type": "run_off_cycle_payroll" }'
+
+```
+
+On the Edit Payroll page, click the more options button next to an employee to set employee net earnings.
+
+<img className="block" src="https://lh3.googleusercontent.com/keep-bbsk/AAAetVKrxJ-r0HWK5yhTUcVq6c_vt8viXgv1mfDpjc0Ck6XyN-PnxxtkU5yjPuMha1FAe1cLql4-2y8T-x9jY54w7k5mSbH7_It9kynGCfYGGfCx3x22=s1600" alt="" />
+
+From there, enter in the desired net earnings in the modal and click Calculate Gross from Net.
+
+<img className="block" src="https://lh3.googleusercontent.com/keep-bbsk/AAAetVK_6Bqwk4pN1eJjFhFGDWHmpD-OgoAjLTSq6M7yennLjHjAombhBqwUmTHERZhLdbJZv_j9BOj5tkYjFlm76vs9vRSC5u3ZJoOAHF-SjjGontox=s1274" alt="" />
+
+Continue clicking through the flow to submit the payroll. The employee payment should match the inputted employee net earnings. This can be confirmed from the payroll Review and Submit page under the Hours worked & take home pay tab.
+
+<img className="block" src="https://lh3.googleusercontent.com/keep-bbsk/AAAetVIm1BepGRaPv2CGdAbKseOVGXqlHAF9581FwbT_ZBUBDbEey83lh3RwXoERw1PG7XfVWBDhZYcfXFKmXj27Rl7mz4VsDFcY1R2inQr-rhlyU_mV=s1412" alt="" />
+
