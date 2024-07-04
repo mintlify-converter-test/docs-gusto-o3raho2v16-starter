@@ -1,0 +1,32 @@
+---
+title: "Update Postman Collection Notification"
+description: "Instructions for handling Postman collection updates"
+---
+When a Postman collection has been updated, you should receive in email notification like the following
+
+<img className="block" src="images/files_readme_io/_ef39b1b_Screenshot_2024_01_08_at_8.52.29_AM.png" alt="" />
+
+Check for changes to the collection by selecting the “Pull Changes” option from the dropdown on the collection. And save the changes by clicking the “Pull Changes” button.
+
+<img className="block" src="images/files_readme_io/_b24fd94_Screenshot_2024_01_04_at_4.04.15_PM.png" alt="" /> <img className="block" src="images/files_readme_io/_6636150_Screenshot_2024_01_04_at_4.09.58_PM.png" alt="" />
+
+#### Changelog examples
+
+Below are some examples of changelogs that you may see and what they mean
+
+**A new endpoint added**
+
+<img className="block" src="images/files_readme_io/_74b8d74_Screenshot_2024_01_04_at_4.06.44_PM.png" alt="" />
+
+**A new parameter added to a request body**
+
+<img className="block" src="images/files_readme_io/_675ce0f_Screenshot_2024_01_04_at_4.06.56_PM.png" alt="" />
+
+**New URL parameters added to a GET request**
+
+<img className="block" src="images/files_readme_io/_2918860_Screenshot_2024_01_04_at_4.07.10_PM.png" alt="" />
+
+#### Conflicting changes
+
+Sometimes we have to update endpoints in our collection that developers may have spent a lot of time customizing in their own local Postman environments. To maintain your own configurations it is crucial to carefully look through the changelog and select the changes that you want to incorporate and those that you don’t. Postman will attempt to find pieces of the changelog that conflict with changes that have been made in your local environment, and will give you the option of keeping your own changes or overwriting them with changes that we have uploaded to the collection. In the below example, you would select “Keep Destination” to preserve the changes to the request body you have made to this endpoint. All other changes in the changelog will be overwritten with what we have uploaded to the collection.
+
