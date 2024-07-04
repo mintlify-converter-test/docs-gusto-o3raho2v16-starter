@@ -1,0 +1,197 @@
+---
+title: "One-off Payrolls"
+description: "Guide to processing one-off payrolls outside regular schedule"
+---
+[One-off (or 'off-cycle') payrolls](https://support.gusto.com/payroll/processing-payrolls/off-cycle-payrolls/999908231/Run-an-off-cycle-payroll.htm)
+ are available if you need to pay your team outside of the regular payroll schedule. [Reasons for an off-cycle](https://support.gusto.com/payroll/processing-payrolls/off-cycle-payrolls/1019772541/Reasons-for-running-an-off-cycle-payroll.htm)
+ can vary. Unlike regular payrolls, off-cycle payrolls are ad-hoc and do not have a set schedule.
+
+## 1\. Create an Off Cycle Payroll
+
+Note that off-cycle payrolls default to using the same withholding rates, deductions, and contributions made in regular payrolls. To create an off-cycle payroll use the `POST companies/{company_uuid}/payrolls` [endpoint](/embedded-payroll/reference/post-v1-companies-company_id-payrolls)
+.
+
+> ## 📘off\_cycle\_reason and Benefits
+> 
+> *   External benefits and deductions are default included and the payroll is default taxed as regular wages when the `off_cycle_reason` is set to `Correction`.
+> *   All benefits and deductions are default blocked and the payroll is default taxed at a fixed withholding rate when the `off_cycle_reason` is set to `Bonus`.
+> *   Parameters for these default settings are adjustable
+
+```curl
+curl --request POST \
+     --url https://api.gusto-demo.com/v1/companies/{company_uuid}/payrolls \
+     --header 'accept: application/json' \
+     --header 'authorization: Bearer COMPANY_API_TOKEN' \
+     --header 'content-type: application/json' \
+     --data '
+{
+     "employee_uuids": [\
+          "9c315969-3c8e-4eed-b0ae-8004c70bd8dc"\
+     ],
+     "off_cycle": true,
+     "off_cycle_reason": "Bonus",
+     "start_date": "2022-06-05",
+     "end_date": "2022-06-22",
+     "check_date": "2022-06-22"
+}
+'
+
+``````curl
+const fetch = require('node-fetch');
+
+const url = 'https://api.gusto-demo.com/v1/companies/{company_uuid}/payrolls';
+const options = {
+  method: 'POST',
+  headers: {
+    accept: 'application/json',
+    'content-type': 'application/json',
+    authorization: 'Bearer COMPANY_API_TOKEN'
+  },
+  body: JSON.stringify({
+    employee_uuids: ['9c315969-3c8e-4eed-b0ae-8004c70bd8dc'],
+    off_cycle: true,
+    off_cycle_reason: 'Bonus',
+    start_date: '2022-06-05',
+    end_date: '2022-06-22',
+    check_date: '2022-06/22'
+  })
+};
+
+fetch(url, options)
+  .then(res => res.json())
+  .then(json => console.log(json))
+  .catch(err => console.error('error:' + err));
+
+```
+
+## 2\. Editing the Payroll
+
+Once the Off Cycle payroll is created with the select employees, call the `PUT companies/{company_uuid}/payrolls/{payroll_uuid}/` [endpoint](/embedded-payroll/reference/put-v1-companies-company_id-payrolls)
+ using the unique `payroll_id` with updated fields to add appropriate compensation to pay the employees.
+
+In v2022-12-07, we validate the employee hourly\_compensations against their flsa\_status and will block if an invalid compensations is passed in. We will also validate check\_dates for off-cycle payrolls on creation (i.e. no back dating check\_dates, check\_dates can not be before the next valid direct deposit date if there is a direct deposit employee). Note the check\_date could potentially move while editing if the payroll submission misses the cutoff deadline time (i.e. 3:30pm PST)
+
+```curl
+curl --request PUT \
+     --url https://api.gusto-demo.com/v1/companies/{company_uuid}/payrolls/{payroll_uuid} \
+     --header 'accept: application/json' \
+     --header 'authorization: Bearer COMPANY_API_TOKEN' \
+     --header 'content-type: application/json' \
+     --data '
+{
+     "employee_compensations": [{\
+        "fixed_compensations": [\
+          {\
+              "job_id": 67,\
+              "job_uuid": "23202b84-42b3-44ae-b7c5-5aa7660a30e2",\
+              "name": "Bonus",\
+              "amount": "0.00"\
+           },\
+           {\
+              "job_id": 67,\
+              "job_uuid": "23202b84-42b3-44ae-b7c5-5aa7660a30e2",\
+              "name": "Commission",\
+              "amount": "0.00"\
+           },\
+           ...\
+     ],\
+     "off_cycle": true,\
+     "off_cycle_reason": "Bonus",\
+     ...\
+}\
+'\
+\
+``````curl\
+const fetch = require('node-fetch');\
+\
+const url = 'https://api.gusto-demo.com/v1/companies/{company_uuid}/payrolls/{payroll_uuid}';\
+const options = {\
+  method: 'PUT',\
+  headers: {\
+    accept: 'application/json',\
+    'content-type': 'application/json',\
+    authorization: 'Bearer COMPANY_API_TOKEN'\
+  },\
+  body: JSON.stringify({\
+     "employee_compensations": [{\
+        "fixed_compensations": [\
+          {\
+              "job_id": 67,\
+              "job_uuid": "23202b84-42b3-44ae-b7c5-5aa7660a30e2",\
+              "name": "Bonus",\
+              "amount": "0.00"\
+           },\
+           {\
+              "job_id": 67,\
+              "job_uuid": "23202b84-42b3-44ae-b7c5-5aa7660a30e2",\
+              "name": "Commission",\
+              "amount": "0.00"\
+           },\
+           ...\
+     ],\
+     "off_cycle": true,\
+     "off_cycle_reason": "Bonus",\
+     ...\
+})\
+};\
+\
+fetch(url, options)\
+  .then(res => res.json())\
+  .then(json => console.log(json))\
+  .catch(err => console.error('error:' + err));\
+\
+```\
+\
+## 3\. Calculate the Payroll\
+\
+Similar to processing a regular payroll, call the `PUT companies/{company_uuid}/payrolls/{payroll_uuid}/calculate` [endpoint](/embedded-payroll/reference/put-v1-companies-company_id-payrolls-payroll_id-calculate)\
+ using the unique `payroll_id` for the off-cycle. The calculated payroll details provide a preview of the actual values that will be used when the payroll is run.\
+\
+If the company is blocked from running payroll due to issues like incomplete setup, missing information or other compliance issues, the response will be `422 Unprocessable Entity` with a categorization of the blockers in the form:\
+\
+```json
+{
+  "errors": {
+    "missing_requirements": [
+      "needs_onboarding",
+      "invalid_signatory"
+    ]
+  }
+}
+```\
+\
+## 3\. Submit the Payroll\
+\
+If everything looks accurate, a payroll can be processed using the `PUT companies/{company_uuid}/payrolls/{payroll_uuid}/submit` [endpoint](/embedded-payroll/reference/put-v1-companies-company_id-payrolls-payroll_id-submit)\
+. Upon success, this request transitions the payroll to the `processed` state and initiates the transfer of funds. **This is a critical step to process payroll. A payroll is not finalized without calling this endpoint.**\
+\
+This submission is asynchronous and a successful request responds with a 202 HTTP status. Upon success, the payroll status transitions to the `processed` state.\
+\
+```curl\
+curl --request PUT \\
+     --url https://api.gusto-demo.com/v1/companies/{company_uuid}/payrolls/{payroll_uuid}/submit \\
+     --header 'authorization: Bearer COMPANY_API_TOKEN'\
+\
+``````curl\
+const fetch = require('node-fetch');\
+\
+const url = 'https://api.gusto-demo.com/v1/companies/{company_uuid}/payrolls/{payroll_uuid}/submit';\
+const options = {method: 'PUT', headers: {authorization: 'Bearer COMPANY_API_TOKEN'}};\
+\
+fetch(url, options)\
+  .then(res => res.json())\
+  .then(json => console.log(json))\
+  .catch(err => console.error('error:' + err));\
+\
+```\
+\
+> ## 📘Cancel an Off-Cycle Payroll\
+> \
+> You can revert a payroll to the `unprocessed` state using the `PUT /companies/{company_uuid}/payrolls/{payroll_uuid}/cancel` [endpoint](/embedded-payroll/reference/put-api-v1-companies-company_id-payrolls-payroll_id-cancel)\
+> . A payroll **_cannot_** be canceled after 3:30pm PST on the `payroll_deadline`\
+\
+Did this page help you?\
+\
+Yes\
+\
+No
