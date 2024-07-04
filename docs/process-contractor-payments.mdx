@@ -1,0 +1,159 @@
+---
+title: "Contractor Payment Methods"
+description: "Different tax treatments and contractor payment methods"
+---
+Due to their [different tax treatments](https://gusto.com/resources/articles/hr/hiring/hire-employee-or-independent-contractor)
+, 1099 Contractor payments are handled separately from W2 Employee [payroll](/embedded-payroll/docs/complete-a-regular-payroll)
+ and [off-cycle payroll](/embedded-payroll/docs/create-an-off-cycle-payroll)
+.
+
+Contractors can have three types of payment methods:
+
+1.  **Direct deposit** - Gusto will deposit the funds to the bank account associated with the contractor.
+2.  **Check** - the payroll admin will be responsible for providing the contractor with a check for the amount of the payment. The amount will be reported on the 1099 of the contractor.
+3.  **Historical payment** \- the contractor was already paid and the amount is being added for reporting purposes only. When using the historical payment method, the date of the payment must be in the past. The contractor will not receive any compensation for this payment as it is exclusively for reporting purposes.
+
+## 1\. Preview Contractor Payment Dates (Optional)
+
+You can use the `GET companies/{company_uuid}/contractor_payments/preview` [endpoint](/embedded-payroll/reference/get-companies-company_uuid-contractor_payments-preview)
+ determine the payment speed a payment can be paid out for a given company. This will return the `expected_debit_date` for the payment.
+
+```curl
+curl --request GET \
+     --url https://api.gusto-demo.com/v1/companies/{company_uuid}/contractor_payments/preview \
+     --header 'accept: application/json' \
+     --header 'authorization: Bearer COMPANY_API_TOKEN' \
+     --header 'content-type: application/json' \
+     --data '
+{
+     "contractor_payments": [\
+          {\
+               "bonus": 550,\
+               "contractor_uuid": "{contractor_uuid}",\
+               "date": "2021-05-17",\
+               "hours": 15,\
+               "payment_method": "Direct Deposit",\
+               "reimbursement": 20\
+          }\
+     ]
+}
+'
+
+``````curl
+const fetch = require('node-fetch');
+
+const url = 'https://api.gusto-demo.com/v1/companies/{company_uuid}/contractor_payments/preview';
+const options = {
+  method: 'GET',
+  headers: {
+    accept: 'application/json',
+    'content-type': 'application/json',
+    authorization: 'Bearer COMPANY_API_TOKEN'
+  },
+  body: JSON.stringify({
+    contractor_payments: [\
+      {\
+        bonus: 550,\
+        contractor_uuid: '{contractor_uuid}',\
+        date: '2021-05-17',\
+        hourly_rate: 25,\
+        hours: 15,\
+        payment_method: 'Direct Deposit',\
+        reimbursement: 20\
+      }\
+    ]
+  })
+};
+
+fetch(url, options)
+  .then(res => res.json())
+  .then(json => console.log(json))
+  .catch(err => console.error('error:' + err));
+
+```
+
+## 2\. Create Contractor Payment
+
+You can create the contractor payment using the `POST companies/{company_id}/contractor_payments` [endpoint](/embedded-payroll/reference/post-v1-companies-company_id-contractor_payments)
+.
+
+```curl
+curl --request GET \
+     --url https://api.gusto-demo.com/v1/companies/{company_uuid}/contractor_payments/ \
+     --header 'accept: application/json' \
+     --header 'authorization: Bearer COMPANY_API_TOKEN' \
+     --header 'content-type: application/json' \
+     --data '
+{
+     "contractor_payments": [\
+          {\
+               "bonus": 550,\
+               "contractor_uuid": "{contractor_uuid}",\
+               "date": "2021-05-17",\
+               "hours": 15,\
+               "payment_method": "Direct Deposit",\
+               "reimbursement": 20\
+          }\
+     ]
+}
+'
+
+``````curl
+const fetch = require('node-fetch');
+
+const url = 'https://api.gusto-demo.com/v1/companies/{company_uuid}/contractor_payments/';
+const options = {
+  method: 'GET',
+  headers: {
+    accept: 'application/json',
+    'content-type': 'application/json',
+    authorization: 'Bearer COMPANY_API_TOKEN'
+  },
+  body: JSON.stringify({
+    contractor_payments: [\
+      {\
+        bonus: 550,\
+        contractor_uuid: '{contractor_uuid}',\
+        date: '2021-05-17',\
+        hourly_rate: 25,\
+        hours: 15,\
+        payment_method: 'Direct Deposit',\
+        reimbursement: 20\
+      }\
+    ]
+  })
+};
+
+fetch(url, options)
+  .then(res => res.json())
+  .then(json => console.log(json))
+  .catch(err => console.error('error:' + err));
+
+```
+
+## 3\. Retrieve Processed Payments
+
+Once created you can get processed payments using:
+
+1.  `GET companies/{company_uuid}/contractor_payments/{contractor_payment_uuid}` [endpoint](/embedded-payroll/reference/get-v1-companies-company_id-contractor_payment-contractor-payment)
+     for specific Payment IDs
+2.  `GET companies/{company_id}/contractor_payments` [endpoint](/embedded-payroll/reference/get-v1-companies-company_id-contractor_payments)
+     at the Company level
+
+**Note that all contractor payments are done on a contractor-by-contractor basis and there is not a bulk payment that includes multiple contractors at once.**
+
+> ## 📘Cancel a Payment
+> 
+> Each contractor payment will include the boolean `may_cancel`. If set to `true`, using the specific payment ID, send a delete request to the `DELETE companies/{company_id}/contractor_payments/{contractor_payment_id}` [endpoint](/embedded-payroll/reference/delete-v1-companies-company_id-contractor_payment-contractor-payment)
+> . If it is set to `false` the contractor payment has already been paid out to the contractor. “Check” and “historical payment” contractor payments can always be canceled given no money was sent out via ACH by Gusto.
+> 
+> A payment **_cannot_** be canceled after 3:30pm PST on the `payroll_deadline`.
+
+## 4\. Return Payment Receipt
+
+Once a payroll is submitted, we recommend including a summary of the payroll for the end user to view the debit date, check date, and payroll details. The payroll receipt should also be available on this final step. See [Contractor Payment Receipts](/embedded-payroll/docs/contractor-payment-receipts)
+ for more information.
+
+You can retrieve a Payment Receipt using the `GET contractor_payments/{contractor_payment_uuid}/receipt` [endpoint](/embedded-payroll/reference/get-v1-contractor_payments-contractor_payment_uuid-receipt)
+.
+
