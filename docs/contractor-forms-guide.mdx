@@ -1,0 +1,19 @@
+---
+title: "API Forms Retrieval"
+description: "Learn how to retrieve various forms via the API"
+---
+All forms, except for payment receipts, that are supported via the API can be retrieved using the `GET contractors/{contractor_uuid}/forms` [endpoint](/embedded-payroll/reference/get-v1-contractor-forms)
+. To receive Payment Receipts you can use the `Get contractor_payments/{contractor_payment_uuid}/receipt` [endpoint](/embedded-payroll/reference/get-v1-contractor_payments-contractor_payment_uuid-receipt)
+.
+
+| Document | Description | API Support |
+| --- | --- | --- |
+| 1099-NEC | Form 1099-NEC is an Internal Revenue Service (IRS) form for businesses to report payments made to non-employees, such as independent contractors. | Yes |
+| W9  | This document provides information to a company about who they will be making payments to. Gusto can generate a W9 for signature if an email is associated with the contractor and return it via the API. | Yes |
+| Payment Receipts | All Contractor Payments which result in ACH movement of money require that a receipt be available once the payment has been funded. Contractor Payments are funded when the ACH transfer for the payment has been initiated. | Yes |
+
+> ## 📘1099 Forms
+> 
+> Contractor 1099 Forms are generated at the end of the calendar year. To test these endpoints in demo at anytime, use the `POST sandbox/generate_1099` [endpoint](/embedded-payroll/reference/post-v1-sandbox-generate_1099)
+> .
+
