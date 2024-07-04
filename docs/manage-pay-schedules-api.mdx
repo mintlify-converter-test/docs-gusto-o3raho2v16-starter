@@ -1,0 +1,240 @@
+---
+title: "Change pay schedule"
+description: "Update pay schedule"
+---
+Users can create and edit pay schedules and assign multiple pay schedules by compensation, department or per employee. We also support running transition payrolls to bridge the gap between schedule changes, which can be skipped by the user if desired.
+
+We support managing pay schedules via Flow. Check out our [Manage Pay Schedules Flow Guide](/embedded-payroll/docs/manage-pay-schedules-flow)
+ for more information.
+
+# Change pay schedule
+
+## 1\. Update pay schedule
+
+```curl
+curl --request PUT \
+     --url https://api.gusto-demo.com/v1/companies/company_id/pay_schedules/pay_schedule_id \
+     --header 'accept: application/json' \
+     --header 'content-type: application/json' \
+     --data '
+{
+  "frequency": "Twice per month",
+  "anchor_pay_date": "2021-10-15",
+  "anchor_end_of_pay_period": "2021-10-15",
+  "day_1": 15,
+  "day_2": 31,
+  "custom_name": "demo pay schedule",
+  "version": "68934a3e9455fa72420237eb05902327",
+  "auto_pilot": true
+}
+'
+
+```
+
+Previously, our [Update a pay schedule](/embedded-payroll/reference/put-v1-companies-company_id-pay_schedules-pay_schedule_id)
+ endpoint only allowed updating auto pilot. We now support updating the existing pay schedule with `pay_frequency`, `anchor_pay_date`, `anchor_end_of_pay_period`, `day_1`, `day_2` and `custom_name` parameters. Some of these fields are optional depending on the pay schedule election.
+
+## 2\. Get transition pay period
+
+In the [Get pay periods for a company](/embedded-payroll/reference/get-v1-companies-company_id-pay_periods)
+ endpoint, we introduce `period_types` in query params, where you can pass in a comma separated list of pay period types, such as regular, transition. If nothing is passed in, we will default to return regular pay periods.
+
+The response of the pay period endpoint now includes a field of `payroll_type` to distinguish whether the pay period is regular or transition.
+
+## 3\. Skip payroll
+
+We introduced a new [Skip a payroll](/embedded-payroll/reference/get-v1-companies-payroll-skip-company_uuid)
+ endpoint, which supports skipping regular, new hire, termination and transition payrolls. Skipping a payroll generates a $0 payroll for the target employee(s) associated with the pay schedule. Here are some example reasons why you would want to skip a payroll:
+
+*   There are limited funds for payrolls, but a company wants to have a consistent schedule (for the IRS)
+*   An employee is being onboarded but won’t be paid yet
+*   Company wants to skip a few months of payrolls for seasonal workers or pause payrolls entirely
+
+Here are the parameters needed for each payroll type:
+
+| Payroll Type | `start_date` | `end_date` | `pay_schedule_uuid` | `employee_uuids` (only supports one employee) |
+| --- | --- | --- | --- | --- |
+| Regular | X   | X   | X   |     |
+| New Hire |     |     |     | X   |
+| Termination |     |     |     | X   |
+| Transition | X   | X   | X   |     |
+
+## 4\. Transition payroll
+
+<img className="block" src="images/files_readme_io/_a75feca_small_transitionpayroll.png" alt="" />
+
+We added “Transition from old pay schedule” as an option for `off_cycle_reason` to support transition payroll through our [Create an off-cycle payroll](/embedded-payroll/reference/post-v1-companies-company_id-payrolls)
+ endpoint. You would need to pass in the `start_date`, `end_date`, and `pay_schedule_uuid` that match the transition pay period.
+
+If the system determines there’s a gap period between the old pay schedule and the new pay schedule after the pay schedule is changed, it will prompt the user to run a transition payroll before running other payrolls in the `run_payroll` flow. The user will be provided with two links to either run the transition payroll or skip the transition payroll.
+
+> ## 📘
+> 
+> Resolving transition periods is a required step in order to run payrolls again. The pay period selection and run payroll are disabled until all the transition pay periods are resolved (through either running or skipping the transition payrolls). This is a UI blocker explicit to our Run Payroll Flow to ensure that admins address potential gaps in their pay schedules during transitions, to ensure employees are paid the correct amounts.
+
+<img className="block" src="images/files_readme_io/_d607511_image9.png" alt="" />
+
+# Assign multiple pay schedules
+
+## 1\. Create a new pay schedule
+
+Create a new pay schedule using the `POST /v1/companies/{company_uuid}/pay_schedules` [endpoint](/embedded-payroll/reference/post-v1-companies-company_id-pay_schedules)
+.
+
+By providing a version header of **X-Gusto-API-Version** for 2023-06-01, users can create a new pay schedule without having any employees attached.
+
+## 2\. Preview
+
+Different body parameters are required based on the pay schedule type.
+
+### A. Single
+
+```
+{
+    "type": "single",
+    "default_pay_schedule_uuid": "{{pay_schedule_uuid_1}}"
+}
+
+```
+
+### B. By employee
+
+All employees in the company (onboarded or onboarding), except terminated ones, must be assigned to a pay schedule.
+
+```
+{
+    "type": "by_employee",
+    "employees": [\
+        {\
+            "employee_uuid": "{{employee_uuid_1}}",\
+            "pay_schedule_uuid": "{{pay_schedule_uuid_1}}"\
+        },\
+        {\
+            "employee_uuid": "{{employee_uuid_2}}",\
+            "pay_schedule_uuid": "{{pay_schedule_uuid_1}}"\
+        },\
+        {\
+            "employee_uuid": "{{employee_uuid_3}}",\
+            "pay_schedule_uuid": "{{pay_schedule_uuid_1}}"\
+        },\
+        {\
+            "employee_uuid": "{{employee_uuid_4}}",\
+            "pay_schedule_uuid": "{{pay_schedule_uuid_2}}"\
+        },\
+        {\
+            "employee_uuid": "{{employee_uuid_5}}",\
+            "pay_schedule_uuid": "{{pay_schedule_uuid_2}}"\
+        },\
+        {\
+            "employee_uuid": "{{employee_uuid_6}}",\
+            "pay_schedule_uuid": "{{pay_schedule_uuid_2}}"\
+        }\
+    ]
+}
+
+```
+
+### C. By department
+
+All departments in the company must be assigned to a pay schedule. Employees without a categorized department will use the default pay schedule.
+
+```
+{
+    "type": "by_department",
+    "default_pay_schedule_uuid": "{{pay_schedule_uuid_5}}",
+    "departments": [\
+        {\
+            "department_uuid": "{{employee_uuid_1}}",\
+            "pay_schedule_uuid": "{{pay_schedule_uuid_1}}"\
+        },\
+        {\
+            "department_uuid": "{{employee_uuid_2}}",\
+            "pay_schedule_uuid": "{{pay_schedule_uuid_3}}"\
+        },\
+        {\
+            "department_uuid": "{{employee_uuid_3}}",\
+            "pay_schedule_uuid": "{{pay_schedule_uuid_2}}"\
+        }\
+    ]
+}
+
+```
+
+### D. Hourly / Salaried
+
+When choosing an hourly salaried pay schedule type, the two pay schedules must be different from each other.
+
+```
+{
+    "type": "hourly_salaried",
+    "hourly_pay_schedule_uuid": "{{pay_schedule_uuid_1}}",
+    "salaried_pay_schedule_uuid": "{{pay_schedule_uuid_2}}"
+}
+
+```
+
+### Sample response when previewing changes
+
+```
+{
+    "type": "by_department",
+    "employee_changes": [\
+        {\
+             "employee_uuid": "311cb571-5c41-4e5b-8488-ff6a1b5a7c18",\
+             "first_name": "Isaiah",\
+             "last_name": "Berlin",\
+             "pay_frequency": "Monthly -- Custom monthly on the sixth",\
+             "first_pay_period": {\
+                   "pay_schedule_uuid": "fc8c8a47-74b9-492c-8fce-7907247736eb",\
+                   "start_date": "2023-06-07",\
+                   "end_date": "2023-07-06",\
+                   "check_date": "2023-07-06"\
+             },\
+             "transition_pay_period": null\
+       },\
+       {\
+            "employee_uuid": "7936c5f0-7f51-4535-aa6a-ea2ce7256fbf",\
+            "first_name": "Patricia",\
+            "last_name": "Churchland",\
+            "pay_frequency": "Monthly -- Custom monthly on the sixth",\
+            "first_pay_period": {\
+                 "pay_schedule_uuid": "fc8c8a47-74b9-492c-8fce-7907247736eb",\
+                 "start_date": "2023-06-07",\
+                 "end_date": "2023-07-06",\
+                 "check_date": "2023-07-06"\
+            },\
+            "transition_pay_period": {\
+                 "start_date": "2023-05-20",\
+                 "end_date": "2023-06-06"\
+            }\
+       }\
+   ]
+}
+
+```
+
+This endpoint shows a preview of impacted employees’ pay schedule changes along with their transition pay periods (if applicable) and first pay period information. Users can call this endpoint multiple times and it will not make any changes to the actual data.
+
+If the “employee\_changes” is empty, that means you are updating with a pay schedule that the employees are already on. Employees remained on the same pay schedule since there was no change.
+
+The transition pay period should be the dates between the last processed pay period’s end date to the new pay periods’ start date.
+
+> ## 🚧
+> 
+> Currently, Gusto does not support update, preview or assign pay schedules when there’s a pending termination payroll for an employee. This prevents scheduled termination payroll from becoming inaccurate due to pay schedule changes.
+
+## 3\. Assign
+
+Assign pay schedules using the `POST /v1/companies/{company_uuid}/pay_schedules/assign` [endpoint](/embedded-payroll/reference/post-v1-companies-company_id-pay_schedules-assign)
+.
+
+After reviewing changes using the preview endpoint, the user can use this assign endpoint to make changes to their pay schedules.
+
+## 4\. Verify changes
+
+Use the `GET /v1/companies/{company_uuid}/pay_schedules/assignments` [endpoint](/embedded-payroll/reference/get-v1-companies-company_id-pay_schedules-assignments)
+ to verify the pay schedule assignment for a company. Depending on the pay schedule type, it returns a pay schedule mapping with employees or departments.
+
+The [Get a company endpoint](/embedded-payroll/reference/get-v1-companies)
+ also includes a `pay_schedule_type` field.
+
