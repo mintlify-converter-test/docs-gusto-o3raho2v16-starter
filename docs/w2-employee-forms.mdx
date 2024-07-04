@@ -1,0 +1,38 @@
+---
+title: "Employee Forms Overview"
+description: "Information on required employee forms and API endpoints for retrieval and signing."
+---
+There are a variety of employee forms that are required during different stages of employment.
+
+All forms that are supported via the API can be retrieved using the `GET employees/{employee_uuid}/forms` [endpoint](/embedded-payroll/reference/get-v1-employee-forms)
+.
+
+## Onboarding
+
+All Onboarding forms must be signed before an employee is paid using the `PUT forms/{form_uuid}/sign` [endpoint](/embedded-payroll/reference/put-v1-company-form-sign)
+.
+
+| Document | Description | API Support |
+| --- | --- | --- |
+| Federal W4 | W-4 Employee Withholding Allowance: This document records the employee's federal tax withholding allowance. | Yes |
+| State W4 | This document records the employee's state tax withholding allowance. | No  |
+| Direct Deposit Authorization | This document authorizes Gusto to initiate debits and credits from a bank account in order to pay people. If `payment_method` = `Direct Deposit`, requires a signature. | Yes |
+| I-9 | This document records a person's authorization to work in the USA. | No  |
+| New Hire Report | This document reports new hires to the state where someone is employed (for example in California this is form DE-34) | Yes |
+
+## Ongoing
+
+To get Employee paystubs, use the `GET payrolls/{payroll_uuid}/employees/{employee_uuid}/pay_stub` [endpoint](/embedded-payroll/reference/get-v1-payrolls-payroll_uuid-employees-employee_uuid-pay_stub)
+.
+
+| Document | Description | API Support |
+| --- | --- | --- |
+| Paystubs | Each paystub includes gross earnings, employee and employer taxes, employee benefits and deductions, employer contributions, time off taken and accrued, reimbursements, and your check amount. The taxes on your paystub may vary if your gross pay changes paycheck to paycheck. Your net pay is the remaining amount of gross pay after taxes, benefits, and any deductions are made. **Due to PII and PHI you must deliver paystubs through a secure method.** | Yes |
+
+## End of Year
+
+| Document | Description | API Support |
+| --- | --- | --- |
+| W2  | This document reports annual wages, taxes, deductions, and other salary information.  The information on your W-2 is needed when preparing your federal income tax return—Forms W-2 are available in mid-January for the previous calendar year. | Yes |
+| W2-C | An amended version of the W2, should any changes occur after the original W2 is issued. | Yes |
+
