@@ -1,0 +1,266 @@
+---
+title: "OAuth2 Connect"
+description: "Migrate existing Gusto customers to Embedded Payroll via OAuth2 authentication"
+---
+You may have a User who has previously used Gusto.com for payroll. Instead of creating a new company for them, you can migrate their existing company to your system.
+
+## 1\. OAuth2 Connect
+
+When migrating _existing_ Gusto customers to your Embedded Payroll product, authentication is done using [OAuth2](https://oauth.net/2/)
+. Numerous libraries implementing the protocol can be found on the [OAuth2 homepage](https://oauth.net/2/)
+.
+
+Only a primary administrator or full access administrator on the existing Gusto account can enable and authenticate your application’s access.
+
+> ## 📘Multiple Company Administrators
+> 
+> A user may also be an administrator for multiple companies. Your application should ensure the customer selects the correct Gusto account for linking.
+
+### a. Retrieve Authorization Code
+
+The first step to Authentication is a user authorizing your application to access their information on Gusto and to receive an Authorization Code. To do this, you'll create a link to Gusto where they can approve access.
+
+> ## 📘Authorization Code
+> 
+> **Expiration Time:** 10 minutes
+> 
+> **HTTP Method:** GET
+> 
+> **URL:** [https://api.gusto.com/oauth/authorize](https://api.gusto.com/oauth/authorize)
+> 
+> **Parameters:**
+> 
+> *   `client_id` your client id. This is generated for you once you create an app in the [Gusto developer portal](https://dev.gusto.com/applications)
+>     .
+> *   `redirect_uri` the url you submitted when creating an application in the [Gusto developer portal](https://dev.gusto.com/applications)
+>     . Should the user accept integration, the user will be returned to this url with the code parameter set to the authorization code.
+> *   `response_type` the literal string `code`.
+
+The link contains the parameters outlined above. Below is an example URL:
+
+```sample link
+<a href="https://api.gusto.com/oauth/authorize?client_id=bbb286ff1a4fe6b84742b0d49b8d0d65bd0208d27d3d50333591df71c45da519&redirect_uri=https%3A%2F%2Fexample.com%2Fcallback&response_type=code">Authorize with Gusto</a>
+
+```
+
+The user will be prompted to log in to their Gusto account and authorize integration with your application for one or more of their companies.
+
+After accepting, Gusto will generate an authorization code and the user will be redirected to the `redirect_uri` with that code attached.
+
+```sample response link
+https://example.com/callback?code=51d5d63ae28783aecd59e7834be2c637a9ee260f241b191565aa10fe380471db
+
+```
+
+This parameter contains the authorization code that you will then use to obtain your first access token.
+
+### b. Retrieve an Access Token
+
+> ## 📘Access Token
+> 
+> **Expiration Time:** 2 hours
+> 
+> **HTTP Method:** POST
+> 
+> **URL:** [https://api.gusto.com/oauth/token](https://api.gusto.com/oauth/token)
+> 
+> **Parameters:**
+> 
+> *   `client_id` your client id. This is generated for you once you create an app in the [Gusto dev portal](https://dev.gusto.com/applications)
+>     .
+> *   `client_secret` your client secret. This is generated for you once you create an app in the [Gusto dev portal](https://dev.gusto.com/applications)
+>     .
+> *   `redirect_uri` the url you submitted when creating an application in the [Gusto dev portal](https://dev.gusto.com/applications)
+>     .
+> *   `code` the code being exchanged for an access token. This should be the Authorization Code received above (`51d5d63ae28783aecd59e7834be2c637a9ee260f241b191565aa10fe380471db`).
+> *   `grant_type` this should be the literal string "authorization\_code"
+
+Next, you will make a server-side request to Gusto with your authorization code to `<https://api.gusto.com/oauth/token`\> with the parameters outlined above. These parameters should be POST data in the **body** of the request. In this case, the body of the request to `<https://api.gusto.com/oauth/token`\> would look like this with a `Content-Type` of `application/json`:
+
+```curl
+curl --request POST \
+     --url https://api.gusto-demo.com/v1/partner_managed_companies \
+     --header 'accept: application/json' \
+     --header 'content-type: application/json'\
+      --data '{
+        "client_id": "bbb286ff1a4fe6b84742b0d49b8d0d65bd0208d27d3d50333591df71c45da519",
+        "client_secret": "cb06cb755b868a819ead51671f0f7e9c35c7c4cbbae0e38bef167e0e4ba64ee6",
+        "redirect_uri": "https://example.com/callback",
+        "code": "51d5d63ae28783aecd59e7834be2c637a9ee260f241b191565aa10fe380471db",
+        "grant_type": "authorization_code"
+      }'
+
+```
+
+The corresponding response will include both an `access_token` and a `refresh_token`
+
+```json
+{
+  "access_token": "de6780bc506a0446309bd9362820ba8aed28aa506c71eedbe1c5c4f9dd350e54",
+  "token_type": "bearer",
+  "expires_in": 7200,
+  "refresh_token": "8257e65c97202ed1726cf9571600918f3bffb2544b26e00a61df9897668c33a1"
+}
+```
+
+## 2\. Get Company Resource Information from the Token
+
+With the access token, you can get token info using the `GET token_info` [endpoint](/embedded-payroll/reference/get-v1-token-info)
+. This will return an object that includes the resource the token is authorized for.
+
+```curl
+curl --request GET \
+     --url https://api.gusto-demo.com/v1/token_info \
+     --header 'accept: application/json' \
+     --header 'authorization: Bearer COMPANY_ACCESS_TOKEN'
+
+``````curl
+const fetch = require('node-fetch');
+
+const url = 'https://api.gusto-demo.com/v1/me';
+const options = {
+  method: 'GET',
+  headers: {accept: 'application/json', authorization: 'Bearer COMPANY_ACCESS_TOKEN'}
+};
+
+fetch(url, options)
+  .then(res => res.json())
+  .then(json => console.log(json))
+  .catch(err => console.error('error:' + err));
+
+```
+
+In this case, the `resource_type` is `Company` and the `resource_uuid` is used in the next step.
+
+## 3\. Accept Terms of Service
+
+Using the `uuid` for the company you want to migrate, you can accept the terms of service using the `POST partner_managed_companies/{company_uuid}/accept_terms_of_service` [endpoint](post-partner-managed-companies-company_uuid-accept_terms_of_service)
+. Each company added must accept the [Terms of Service](https://flows.gusto.com/terms)
+.
+
+```curl
+curl --request POST \
+     --url https://api.gusto-demo.com/v1/partner_managed_companies/{company_uuid}/accept_terms_of_service \
+     --header 'accept: application/json' \
+     --header 'authorization: Bearer COMPANY_ACCESS_TOKEN' \
+     --header 'content-type: application/json' \
+     --data '
+{
+     "email": "mushnikflowers@testemail.com",
+     "external_user_id": "YOUR_SYSTEMS_ID",
+     "ip_address": "192.168.1.2"
+}
+'
+
+``````curl
+const fetch = require('node-fetch');
+
+const url = 'https://api.gusto-demo.com/v1/partner_managed_companies/{company_uuid}/accept_terms_of_service';
+const options = {
+  method: 'POST',
+  headers: {
+    accept: 'application/json',
+    'content-type': 'application/json',
+    authorization: 'Bearer COMPANY_ACCESS_TOKEN'
+  },
+  body: JSON.stringify({
+    email: 'mushnikflowers@testemail.com',
+    external_user_id: '2005648946132',
+    ip_address: '192.168.1.2'
+  })
+};
+
+fetch(url, options)
+  .then(res => res.json())
+  .then(json => console.log(json))
+  .catch(err => console.error('error:' + err));
+
+```
+
+## 4\. Migrate Company to Embedded Payroll
+
+To complete the migration of an existing company, you will use the `PUT partner_managed_companies/{company_uuid}/migrate` [endpoint](/embedded-payroll/reference/put-v1-partner-managed-companies-company-uuid-migrate)
+. This will complete the migration of the company to be managed by you.
+
+Note that the email passed to the migrate endpoint must be the company signatory email, which you can retrieve using the `GET companies/{company_uuid}/signatories` [endpoint](/embedded-payroll/reference/get-v1-companies-company_uuid-signatories)
+.
+
+```curl
+curl --request PUT \
+     --url https://api.gusto-demo.com/v1/partner_managed_companies/{company_uuid}/migrate \
+     --header 'accept: application/json' \
+     --header 'authorization: Bearer COMPANY_ACCESS_TOKEN' \
+     --header 'content-type: application/json' \
+     --data '
+{
+     "email": "mushnikflowers@testemail.com"",
+     "ip_address": "192.168.1.2",
+     "external_user_id": "YOUR_SYSTEMS_ID"
+}
+'
+
+``````curl
+const fetch = require('node-fetch');
+
+const url = 'https://api.gusto-demo.com/v1/partner_managed_companies/{company_uuid}/migrate';
+const options = {
+  method: 'PUT',
+  headers: {
+    accept: 'application/json',
+    'content-type': 'application/json',
+    authorization: 'Bearer COMPANY_API_TOKEN'
+  },
+  body: JSON.stringify({
+    email: 'mushnikflowers@testemail.com',
+    ip_address: '192.168.1.2',
+    external_user_id: 'YOUR_SYSTEMS_ID'
+  })
+};
+
+fetch(url, options)
+  .then(res => res.json())
+  .then(json => console.log(json))
+  .catch(err => console.error('error:' + err));
+
+```
+
+## 5\. (Recommended) Add an Admin
+
+The user who OAuthed in Step 1 is the primary payroll administrator of the company. If you want to add more administrators, or change the administrator you can use the [`POST companies/{company_id}/admins`](/embedded-payroll/reference/post-v1-companies-company_id-admins)
+ endpoint.
+
+```curl
+curl --request POST \
+     --url https://api.gusto-demo.com/v1/companies/company_id/admins \
+     --header 'accept: application/json' \
+     --header 'authorization: Bearer COMPANY_ACCESS_TOKEN' \
+     --header 'content-type: application/json' \
+     --data '
+{
+     "first_name": "Harold",
+     "last_name": "Hill",
+     "email": "musicman@example.com"
+}
+'
+
+``````curl
+const fetch = require('node-fetch');
+
+const url = 'https://api.gusto-demo.com/v1/companies/company_id/admins';
+const options = {
+  method: 'POST',
+  headers: {
+    accept: 'application/json',
+    'content-type': 'application/json',
+    authorization: 'Bearer COMPANY_ACCESS_TOKEN'
+  },
+  body: JSON.stringify({first_name: 'Harold', last_name: 'Hill', email: 'musicman@example.com'})
+};
+
+fetch(url, options)
+  .then(res => res.json())
+  .then(json => console.log(json))
+  .catch(err => console.error('error:' + err));
+
+```
+
