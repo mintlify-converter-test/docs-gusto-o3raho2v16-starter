@@ -1,0 +1,252 @@
+---
+title: "Gusto Rehire Capability"
+description: "Quick and easy re-onboarding for dismissed employees using Rehire Flow or API"
+---
+Gusto provides the capability to rehire a previously dismissed employee to facilitate quick and easy re-onboarding for payroll using the Rehire Flow or API. The Rehire Flow includes the ability to review an employee’s onboarding.
+
+## 1\. Create a Rehire
+
+To create a rehire use the `POST employees/{employee_uuid}/rehire` [endpoint](post-v1-employees-employee_id-rehire)
+.
+
+The following path params are required:
+
+*   **employee\_uuid** - the uuid of the employee for which you’d like to rehire
+
+The following body params are required:
+
+*   **effective\_date** - the date of the employee's rehire
+*   **work\_location\_uuid** - the uuid of the location where the employee is employed. This can be acquired by fetching the company locations.
+*   **file\_new\_hire\_report** - elect to file a new hire report for a given employee's work state
+
+```curl
+curl --request POST  
+     --url <https://api.gusto-demo.com/v1/employees/{employee_uuid}/rehire>  
+     --header 'accept: application/json'  
+     --header 'authorization: Bearer {{access_token}}' \  
+     --header 'content-type: application/json'  \
+     --data '  
+{  
+     "effective_date": "2023-01-01",  
+     "work_location_uuid": “b125fe86-981e-47a2-b7a2-58ca8de1dcb9”,  
+     "file_new_hire_report": true,  
+}'
+
+``````curl
+const fetch = require('node-fetch');
+
+const url = 'https://api.gusto-demo.com/v1/employees/{{employee_uuid}}/rehire';
+const options = {
+  method: 'POST',
+  headers: {
+    accept: 'application/json',
+    'content-type': 'application/json',
+    authorization: 'Bearer COMPANY_API_TOKEN'
+  },
+  body: JSON.stringify({
+    effective_date: '2023-01-01', 
+    work_location_uuid: 'b125fe86-981e-47a2-b7a2-58ca8de1dcb9', 
+    file_new_hire_report: true
+  })
+};
+
+fetch(url, options)
+  .then(res => res.json())
+  .then(json => console.log(json))
+  .catch(err => console.error('error:' + err));
+
+```
+
+> ## 📘
+> 
+> An employee must be terminated before attempting to rehire. If a mistake is made when submitting a rehire request, we only allow rehires with a future effective date to be [updated](put-v1-employees-employee_id-rehire)
+>  and [canceled](delete-v1-employees-employee_id-rehire)
+> . This means once an employee’s rehire date is reached or past, editing or canceling a rehire is not possible.
+
+## 2\. Update a Rehire
+
+To update a rehire use the `PUT employees/{employee_uuid}/rehire` [endpoint](put-v1-employees-employee_id-rehire)
+.
+
+The following path params are required:
+
+*   **employee\_uuid** - the uuid of the employee for which you’d like to rehire
+
+The following body params are required:
+
+*   **version** - the rehire's current version identifier. This can be acquired by fetching the rehire.
+*   **effective\_date** - the date of the employee's rehire
+*   **work\_location\_uuid** - the uuid of the location where the employee is employed. This can be acquired by fetching the company locations.
+*   **file\_new\_hire\_report** - elect to file a new hire report for a given employee's work state
+
+```curl
+curl --request PUT  
+     --url <https://api.gusto-demo.com/v1/employees/{employee_uuid}/rehire>  
+     --header 'accept: application/json'  
+     --header 'authorization: Bearer {{access_token}}' \  
+     --header 'content-type: application/json'  \
+     --data '  
+{  
+     "version": "79fe4bf503bed0f1767dcd69ba819192",
+  	 "effective_date": "2023-01-01",  
+     "work_location_uuid": “b125fe86-981e-47a2-b7a2-58ca8de1dcb9”,  
+     "file_new_hire_report": true,  
+}'
+
+``````curl
+const fetch = require('node-fetch');
+
+const url = 'https://api.gusto-demo.com/v1/employees/{{employee_uuid}}/rehire';
+const options = {
+	method: 'PUT',
+	headers: {
+		accept: 'application/json',
+		'content-type': 'application/json',
+		authorization: 'Bearer COMPANY_API_TOKEN'
+	},
+	body: JSON.stringify({
+		version: '79fe4bf503bed0f1767dcd69ba819192',
+		effective_date: '2023-01-01',
+		work_location_uuid: 'b125fe86-981e-47a2-b7a2-58ca8de1dcb9',
+		file_new_hire_report: true
+	})
+};
+
+fetch(url, options)
+	.then(res => res.json())
+	.then(json => console.log(json))
+	.catch(err => console.error('error:' + err));
+
+```
+
+## 3\. Get an Employee's Employment History
+
+To see an employee’s employment history to get details on the termination and rehire dates, use the `GET employees/{employee_uuid}/employment_history` [endpoint](get-v1-employees-employee_id-rehire)
+.
+
+The following path params are required:
+
+*   **employee\_uuid** - the uuid of the employee for which you’d like to rehire
+
+```curl
+curl --request GET  
+     --url '<https://api.gusto-demo.com/v1/employees/employee_id/employment_history>'  
+     --header 'accept: application/json'  
+     --header 'authorization: Bearer {{access_token}}' \
+
+``````curl
+const fetch = require('node-fetch');
+
+const url = '<https://api.gusto-demo.com/v1/employees/employee_id/employment_history'>;  
+const options = {  
+  method: 'GET',  
+  headers: {accept: 'application/json', authorization: 'Bearer COMPANY_API_TOKEN'}  
+};
+
+fetch(url, options)  
+  .then(res => res.json())  
+  .then(json => console.log(json))  
+  .catch(err => console.error('error:' + err));
+
+```
+
+## 4\. Cancel a Rehire
+
+To cancel a rehire use the `DELETE employees/{employee_uuid}/rehire` [endpoint](delete-v1-employees-employee_id-rehire)
+.
+
+The following path params are required:
+
+*   **employee\_uuid** - the uuid of the employee
+
+```curl
+curl --request DELETE  
+     --url <https://api.gusto-demo.com/v1/employees/{employee_uuid}/rehire>  
+     --header 'accept: application/json'  
+     --header 'authorization: Bearer {{access_token}}' \  
+     --header 'content-type: application/json'  \
+
+``````curl
+const fetch = require('node-fetch');
+
+const url = 'https://api.gusto-demo.com/v1/employees/{{employee_uuid}}/rehire';
+const options = {
+	method: 'DELETE',
+	headers: {
+		accept: 'application/json',
+		'content-type': 'application/json',
+		authorization: 'Bearer COMPANY_API_TOKEN'
+	}
+};
+
+fetch(url, options)
+	.then(res => res.json())
+	.then(json => console.log(json))
+	.catch(err => console.error('error:' + err));
+
+```
+
+> ## 📘
+> 
+> A rehire can only be canceled if it has a future `effective_date`.
+
+## Rehire Flow
+
+To get started, we generate an employee rehire flow via API call to our Flows [endpoint](post-v1-company-flows)
+.
+
+```curl
+curl --request POST  
+     --url <https://api.gusto-demo.com/v1/companies/{{company_uuid}}/flows>  
+     --header 'Authorization: Bearer {{access_token}}’'  
+     --header 'Content-Type: application/json'  
+     --data '  
+{  
+     "flow_type": "rehire",  
+     "entity_type": "Employee",  
+     "entity_uuid": "{{employee_uuid}}"  
+}'
+
+``````curl
+const fetch = require('node-fetch');
+
+const url = '<https://api.gusto-demo.com/v1/companies/{{company_uuid}}/flows'>;  
+const options = {  
+  method: 'POST',  
+  headers: {  
+    accept: 'application/json',  
+    'content-type': 'application/json',  
+    authorization: 'Bearer COMPANY_API_TOKEN'  
+  },  
+  body: JSON.stringify({  
+    flow_type: "rehire",  
+    entity_type: "Employee",  
+    entity_uuid: "{{employee_uuid}}"  
+  })  
+};
+
+fetch(url, options)  
+  .then(res => res.json())  
+  .then(json => console.log(json))  
+  .catch(err => console.error('error:' + err));
+
+```
+
+### 1\. Enter employee rehire details
+
+Enter the rehire start date, work address, and whether you want Gusto to file a new hire report on your behalf (this is the same option as offered when an employee is first onboarded, and the user should consult state requirements as to whether this is needed).
+
+If the company is taxable as S-corp, the 2% shareholder field to select whether the employee is a 2% shareholder will be shown.
+
+<img className="block" src="images/files_readme_io/_63a0703_Screenshot_2023_03_23_at_11.37.42_AM.png" alt="" />
+
+### 2\. Review employee rehire summary
+
+From the summary page, you can edit or cancel a rehire if the rehire effective date is in the future.
+
+<img className="block" src="images/files_readme_io/_54699b3_Screenshot_2023_03_23_at_11.38.26_AM.png" alt="" />
+
+### 3\. (Optional) Review employee info
+
+In the partner’s config flow, if the **Enable employee onboarding in rehire flow** option is checked, the option to Review employee onboarding will appear on the summary page which leads to the employee onboarding flow. By default, the rehire start date and work location will be shown as well as any other previously entered information. If a SSN is present, we don’t allow the employee to edit this for filing purposes after the employee is already onboarded.
+
