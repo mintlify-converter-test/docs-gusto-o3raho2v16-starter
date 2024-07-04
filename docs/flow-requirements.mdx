@@ -1,0 +1,49 @@
+---
+title: "Flow Requirements"
+description: "Requirements for using certain Flows"
+---
+Some Flows have certain requirements that have to be completed before they can be used. If you plan to leverage specific modular flows, it’s important that you take into account these prerequisites to ensure the Flow you’re leveraging will work as intended. You can reference the [Flow Types](/embedded-payroll/docs/flow-types)
+ guide for any data dependencies.
+
+For example, if you plan to use the Add Employees Flow, you need to Add Addresses since a `location_id` is needed to create a job for an employee. The company work locations can be created via API call or by using the Add Addresses Flow.
+
+#### Get the company’s onboarding status response example:
+
+```json
+{
+      "title": "Add Your Employees",
+      "id": "add_employees",
+      "required": true,
+      "completed": true,
+      "requirements": [
+        "add_addresses"
+      ]
+    },
+
+```
+
+From this response you can see `add_addresses` is required to Add Employees. This is because a `location_id` (address) is required to create a job for an employee which is necessary to complete the Add Employee flow.
+
+Create a job request example:
+
+```json
+{
+  "title": "Regional Manager",
+  "location_id": 1363316536327002,
+  "hire_date": "2020-12-21"
+}
+```
+
+```curl
+curl --request POST \
+  --url https://api.gusto-demo.com/v1/companies/{{company_uuid}}/flows \
+  --header 'Authorization: Bearer {{access_token}}’' \
+  --header 'Content-Type: application/json' \
+  --data '{
+  "flow_type": "employee_form_signing",
+  “entity_type”: “Employee”,
+  “entity_uuid”: “{{employee_uuid}}”
+}'
+
+```
+
