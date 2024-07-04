@@ -1,0 +1,51 @@
+---
+title: "Onboarding Contractors"
+description: "Overview of adding contractors during or after company onboarding."
+---
+## Onboarding Contractors
+
+Contractors may be added during a company’s onboarding for payroll, or at any time after this initial onboarding is complete. A contractor can be setup in one of two ways:
+
+1.  By Employer
+2.  By Contractor (“Self-onboarding”)
+
+Both can be done using Gusto’s pre-built Flows or using the Contractor APIs to build custom UI/UX.
+
+### Contractor onboarding by Employer
+
+In this option, Employers handle all of the collection and entry of contractor data.
+
+1.  Employer collects contractor information (e.g., through paper or secure digital forms).
+2.  Employer enters the contractor information, onboarding them into the company.
+
+### Contractor Self-Onboarding
+
+Contractor Self-Onboarding is a feature that enables your employers to hire a new contractor and invite them to onboard and self-manage their personal information required for payroll. This limits the exposure of contractor's sensitive data over insecure channels (e.g., email), scales with organizations that need to onboard many contractors, and saves time for employers and contractors alike.
+
+> ## 📘
+> 
+> Gusto will not send emails to your end user’s contractors. All email or in-app invitations to self-onboard must be incorporated into your Embedded Payroll build.
+
+With contractor self-onboarding, employers delegate some of the onboarding to the contractor:
+
+1.  Employer enters basic information about the contractor (e.g., name, email, compensation).
+2.  Employer invites the contractor to self-onboard.
+3.  Contractor opens the flow to self-onboard, entering their relevant information.
+4.  Contractor completes the form which notifies the Employer to review.
+5.  Employer reviews the contractor's data and onboards the contractor into the company.
+
+The following information is required to invite an contractor to self-onboard:
+
+*   First name, last name
+*   Start date
+*   Contractor Type
+*   Wage Type
+
+> ## 📘
+> 
+> Whether you decide to implement a custom Contractor Self-Management experience or use our Flows, it’s important to [retrieve](/embedded-payroll/reference/get-v1-employees-employee_id-onboarding_statusget-v1-contractors-contractor_uuid-onboarding_status)
+> . the contractor's onboarding status to track the required onboarding steps and respective completion status.
+> 
+> All statuses in the contractor's onboarding status reference require manual update with the `PUT contractors/{contractor_uuid}/onboarding_status`[endpoint](/embedded-payroll/reference/put-v1-contractors-contractor_uuid-onboarding_status)
+> . Any other status transitions will happen automatically, such as: `self_onboarding_invited`, `self_onboarding_invited_started`, `self_onboarding_invited_overdue` and `self_onboarding_completed_by_contractor`.
+
