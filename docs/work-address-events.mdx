@@ -1,0 +1,27 @@
+---
+title: "Work Address Webhooks"
+description: "Events for work address changes"
+---
+When subscribed to the `WorkAddress` webhooks you will receive the following events:
+
+| event\_type | description |
+| --- | --- |
+| employee.work\_address.created | Employee work address has been created |
+| employee.work\_address.updated | Employee work address has been updated |
+| employee.work\_address.deleted | Employee work address has been deleted |
+
+### Example payload
+
+```json
+{
+  "event_type": "employee.work_address.created",
+  "resource_id": 7756341741171842,
+  "resource_type": "Company",
+  "resource_uuid": "463db27c-4ac5-4403-b7f3-d5fb962b051d",
+  "entity_type": "WorkAddress",
+  "entity_id": 7757491335866020,
+  "entity_uuid": "30b33760-bd09-401b-bb49-fc833483304e",
+  "timestamp": 1673566564
+}
+```
+
