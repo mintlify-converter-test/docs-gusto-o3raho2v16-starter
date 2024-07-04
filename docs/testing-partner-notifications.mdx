@@ -1,0 +1,70 @@
+---
+title: "Notification Testing Tool"
+description: "Use the self-serve tool to test notification implementations with specific webhooks and Events API payloads."
+---
+To confirm that your notification implementation works correctly, we recommend that you leverage our self-serve notification testing tool in Developer Portal. This is available in our demo environment only to help you test your notification build.
+
+This tool enables you to trigger specific notification webhooks to be sent to your application’s webhooks URL. Notification test event payloads will also be available when polled via our [Events API](/embedded-payroll/reference/get-events)
+. For more information about setting up webhooks for your application, reference our [webhooks guide](/embedded-payroll/reference/webhooks)
+.
+
+### Trigger a test notification webhook
+
+1.  Sign into your [Developer Portal](https://dev.gusto.com)
+     account.
+2.  Under the partner application that you’d like to test with, select the “Test notifications” tab.
+
+<img className="block" src="images/files_readme_io/_9079331_Capture_2024_04_05_104818.png" alt="" />
+
+3.  Select the specific notification category that you want to test. For a list of all partner notification categories, reference [this table](/embedded-payroll/reference/partner-notification-types)
+    .
+4.  Select "Submit".
+
+If you have webhook subsciptions set up and verified, your webhooks URL should receive a notification event payload for the category you selected.
+
+Webhook deliveries may take a few minutes to appear. You can also poll our [Events API](/embedded-payroll/reference/get-events)
+ and filter by`event_type` to verify that a notification webhook event was created for your application.
+
+> ## 📘
+> 
+> We don’t yet support self-serve testing for all notification categories, and some cannot be triggered in demo at this time.
+> 
+> If you need assistance in triggering a specific notification event that is not available in Developer Portal, please contact your technical solutions representative.
+
+### Retrieve the notification
+
+When a notification is triggered, we automatically apply it to a correctly configured demo company. This will be a demo company that we will create on your behalf, and can be identified with the company name prefix: `[Demo notification testing]`.
+
+> ## 🧪
+> 
+> To enable end-to-end testing, it's important that notifications are applied to a company with the correct data setup. Different notifications require different company data setup.
+> 
+> We take care of this for you by configuring a demo company on your behalf, so you can focus your efforts on testing your notification build.
+
+To retrieve the notification you triggered:
+
+1.  Copy the `company_uuid` from the webhook event payload you received
+2.  Navigate to "Demo Companies" tab in Developer Portal
+3.  Find the company marked for notification testing using the `company_uuid` in Step 1
+4.  Click "Show tokens" for the company
+5.  Provide the access token to call the [Notification API](/embedded-payroll/reference/get-notifications-notification_uuid)
+    
+
+#### Recommended testing best practices
+
+*   Isolate your notification testing to demo companies that are prefixed with `[Demo notification testing]`
+*   For actionable notifications with associated resolution events, perform end-to-end testing to ensure that your application receives a `notification.*.resolved` event once the underlying action item has been completed.
+
+> ## 📘
+> 
+> We may provision multiple demo companies to your application for notification testing. This is because some notifications may result in payroll blockers for a company, and subsequent notifications that you trigger may **not** able to be applied to a company with payroll blockers. In those cases, we will create another demo company in order for your notification to be applied successfully.
+
+### Test end-to-end in your application: an example
+
+If you’d like to simulate an `information_request` notification to be sent to your application’s webhook URL, start by selecting the category in the Developer Portal form.
+
+When you receive the `notification.information_request.created` event, [query for notification details](/embedded-payroll/reference/get-notifications-notification_uuid)
+ to build the notification in your application. Since this is actionable, the notification in your application should have a call-to-action, in which a link to our `company_information_requests` flow should be embedded.
+
+Once the information request has been submitted, you should expect to receive a `notification.information_request.resolved` event.
+
