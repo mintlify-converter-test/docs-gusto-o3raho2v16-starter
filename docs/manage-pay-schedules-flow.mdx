@@ -1,0 +1,48 @@
+---
+title: "Pay Schedules"
+description: "Manage and edit pay schedules, assign multiple schedules, and run transition payrolls."
+---
+Users can create and edit pay schedules and assign multiple pay schedules by compensation, department or per employee. We also support running transition payrolls to bridge the gap between schedule changes, which can be skipped by the user if desired.
+
+You can generate a manage payroll schedule Flow via API call to our Flows endpoint.
+
+```curl
+curl --request POST \
+         --url https://api.gusto-demo.com/v1/companies/{{company_uuid}}/flows \
+         --header 'Authorization: Bearer {{access_token}}’' \
+         --header 'Content-Type: application/json' \
+       --data '
+{
+         "flow_type": "manage_payroll_schedule"
+}
+
+```
+
+## 1\. Choose a pay schedule type to assign
+
+<img className="block" src="images/files_readme_io/_c5f2eff_image1.png" alt="" />
+
+There are 4 pay schedule types to choose from - everyone on one schedule, by compensation, by department and by employee. If the company does not have a pay schedule, it will prompt them to create a new pay schedule with everyone on one schedule. After that, users can configure multiple pay schedules if desired.
+
+## 2\. Assign a pay schedule to each group
+
+<img className="block" src="images/files_readme_io/_47aae69_image7.png" alt="" />
+
+This page will look different depending on which pay schedule type is selected. There is also an option to add a new pay schedule.
+
+## 3\. Review your changes and submit
+
+<img className="block" src="images/files_readme_io/_44a35a5_image6.png" alt="" />
+
+This will show which pay schedule each employee is assigned to.
+
+## 4\. Double check the pay schedule assignment page
+
+<img className="block" src="images/files_readme_io/_379b909_image4.png" alt="" />
+
+After submitting the new pay schedule assignments, the admin can review that the assigned pay schedules are correct. They can also:
+
+*   Preview the future pay dates for each active pay schedule
+*   Edit the pay schedule
+*   Edit the schedule type assignment
+
